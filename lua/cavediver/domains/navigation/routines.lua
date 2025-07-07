@@ -13,6 +13,12 @@ function M.cycle_buffer(direction)
 		return
 	end
 
+	local ok, _ = pcall(require, 'cokeline.mappings')
+	if not ok then
+		print("cokeline is not installed. Please install 'willothy/nvim-cokeline' to use this cycle function.")
+		return
+	end
+
 	if direction == 1 then
 		require('cokeline.mappings').by_step("focus", -1)
 	elseif direction == 2 then
