@@ -104,8 +104,8 @@ local defaults = {
 		toggle_window = "<M-,>", -- Toggle between current and previous window
 
 		-- Cycling mode navigation
-		cycle_left = "<M-m>", -- During cycling mode
-		cycle_right = "<M-n>", -- During cycling mode
+		cycle_left = "<M-n>", -- During cycling mode
+		cycle_right = "<M-m>", -- During cycling mode
 		cycle_select = "<M-v>", -- Quit cycling mode and attach history with cycling buffer
 
 		-- Primary buffer management
