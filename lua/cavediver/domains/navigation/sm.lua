@@ -3,8 +3,8 @@
 ---This module creates and configures the navigation state machine with all
 ---necessary states and transitions for buffer navigation coordination.
 
-local states = require("domains.navigation.states")
-local SMFactory = require('engine')
+local states = require("cavediver.domains.navigation.states")
+local SMFactory = require('cavediver.engine')
 
 local NavigationSM
 

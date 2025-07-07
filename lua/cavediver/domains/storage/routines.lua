@@ -25,10 +25,10 @@
 ---Example: { "/path/to/closed1.lua", "/path/to/closed2.lua" }
 ---@class ClosedBufferData: string[]
 
-local data = require('domains.storage.data')
-local history = require('domains.history')
-local historyState = require('domains.history.states')
-local window = require('domains.window')
+local data = require('cavediver.domains.storage.data')
+local history = require('cavediver.domains.history')
+local historyState = require('cavediver.domains.history.states')
+local window = require('cavediver.domains.window')
 
 local M = {}
 
@@ -191,7 +191,7 @@ local function load_window_buffer_relationships(window_buffer, cwd)
 		error("Current working directory is not set.")
 	end
 	local starting_windows = {}
-	local set_cache_from_window_triquetra = require(').set_cache_from_window_triquetra
+	local set_cache_from_window_triquetra = require('cavediver').set_cache_from_window_triquetra
 
 	-- get valid windows
 	for _, winid in pairs(vim.api.nvim_list_wins()) do

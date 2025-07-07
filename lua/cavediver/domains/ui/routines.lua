@@ -4,12 +4,12 @@
 ---components, including the bufferline cache optimization that was previously
 ---in update_bufferline_state() from buffers.lua.
 
-local data = require('domains.ui.data')
-local history = require('domains.history')
-local window = require('domains.window')
-local navigation = require('domains.navigation')
-local uiMachines = require('domains.ui.sm')
-local states = require('domains.ui.states')
+local data = require('cavediver.domains.ui.data')
+local history = require('cavediver.domains.history')
+local window = require('cavediver.domains.window')
+local navigation = require('cavediver.domains.navigation')
+local uiMachines = require('cavediver.domains.ui.sm')
+local states = require('cavediver.domains.ui.states')
 
 local preserve_winbar_overlap = {} -- Table to track winbar overlap state
 

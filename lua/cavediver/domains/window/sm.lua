@@ -4,17 +4,17 @@
 ---necessary states and transitions for per-window buffer relationship tracking.
 
 local windowSM
-local states = require('domains.window.states')
+local states = require('cavediver.domains.window.states')
 
 -- Try to get existing window state machine
-windowSM = require('engine'):get("window")
+windowSM = require('cavediver.engine'):get("window")
 
 if windowSM ~= nil then
 	return windowSM
 end
 
 -- Create new window state machine if none exists
-windowSM = require('engine'):create("window")
+windowSM = require('cavediver.engine'):create("window")
 
 -- Register all window states
 windowSM:register_state(states.SHOWING_PRIMARY)

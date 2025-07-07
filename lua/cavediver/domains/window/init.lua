@@ -4,12 +4,12 @@
 ---Unlike other domains, it doesn't create its own state machine but extends
 ---the history state machine with window-specific hooks.
 
-local states = require('domains.window.states')
-local data = require('domains.window.data')
-local routines = require('domains.window.routines')
+local states = require('cavediver.domains.window.states')
+local data = require('cavediver.domains.window.data')
+local routines = require('cavediver.domains.window.routines')
 
 -- Load hooks to extend the history state machine
-require('domains.window.hooks')
+require('cavediver.domains.window.hooks')
 
 -- The window domain extends the history state machine rather than creating its own
 -- This is because window buffer relationships are tightly coupled to history attach/detach cycles

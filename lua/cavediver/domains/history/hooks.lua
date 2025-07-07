@@ -1,10 +1,10 @@
-local historySM = require("domains.history.sm")
+local historySM = require("cavediver.domains.history.sm")
 
-local states = require('domains.history.states')
-local data = require('domains.history.data')
+local states = require('cavediver.domains.history.states')
+local data = require('cavediver.domains.history.data')
 
 
-local routines = require("domains.history.routines")
+local routines = require("cavediver.domains.history.routines")
 
 historySM:on("*", states.ATTACHED, "attach_history_update", function(context, _, _)
 	-- Pure history domain logic - always attach core history tracking

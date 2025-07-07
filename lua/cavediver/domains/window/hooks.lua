@@ -4,14 +4,14 @@
 ---per-window buffer relationships. These hooks run after the history domain
 ---hooks to ensure proper execution order.
 
-local history = require('domains.history')
-local navigation = require("domains.navigation")
+local history = require('cavediver.domains.history')
+local navigation = require("cavediver.domains.navigation")
 
-local states = require('domains.window.states')
+local states = require('cavediver.domains.window.states')
 
-local windowSM = require('domains.window.sm')
-local routines = require('domains.window.routines')
-local data = require('domains.window.data')
+local windowSM = require('cavediver.domains.window.sm')
+local routines = require('cavediver.domains.window.routines')
+local data = require('cavediver.domains.window.data')
 
 history.sm:on("*", "*", "ensure_curwin_crux", function(context, _, _)
 	local winid = context.winid or vim.api.nvim_get_current_win()

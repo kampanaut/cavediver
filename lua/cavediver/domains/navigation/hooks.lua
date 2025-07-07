@@ -3,11 +3,11 @@
 ---The navigation domain provides coordination context through its state changes.
 ---These hooks coordinate with other domains when navigation mode changes.
 
-local history = require('domains.history')
-local routines = require('domains.navigation.routines')
-local states = require('domains.navigation.states')
-local data = require('domains.navigation.data')
-local navigationSM = require('domains.navigation.sm')
+local history = require('cavediver.domains.history')
+local routines = require('cavediver.domains.navigation.routines')
+local states = require('cavediver.domains.navigation.states')
+local data = require('cavediver.domains.navigation.data')
+local navigationSM = require('cavediver.domains.navigation.sm')
 
 navigationSM:on(states.NORMAL, states.CYCLING, "start_cycling", function(context)
 	-- When transitioning to cycling mode, notify history domain
@@ -21,7 +21,7 @@ navigationSM:on(states.CYCLING, states.CYCLING, "keep_cycling", function(context
 end, 1, true)
 
 navigationSM:on(states.CYCLING, states.NORMAL, "stop_cycling", function(context)
-	local ui = require('domains.ui')
+	local ui = require('cavediver.domains.ui')
 	---@cast context transitionContextArg
 	history.sm:to(history.states.ATTACHED, { buf = context.history.cbufnr }, history.states.mode.UPDATE)
 	ui.sm.loop:to(ui.states.LOOP.SELF)

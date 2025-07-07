@@ -4,14 +4,14 @@
 ---visual component state. These hooks ensure UI components adapt appropriately to
 ---different coordination modes and buffer state changes.
 
-local uiMachines = require('domains.ui.sm')
-local history = require('domains.history')
-local states = require('domains.ui.states')
-local data = require('domains.ui.data')
-local routines = require('domains.ui.routines')
+local uiMachines = require('cavediver.domains.ui.sm')
+local history = require('cavediver.domains.history')
+local states = require('cavediver.domains.ui.states')
+local data = require('cavediver.domains.ui.data')
+local routines = require('cavediver.domains.ui.routines')
 
 uiMachines.loop:on("*", states.LOOP.SELF, "update_ui_state", function()
-	local navigation = require('domains.navigation')
+	local navigation = require('cavediver.domains.navigation')
 	local tracked_winid = navigation.routines.find_most_recent_tracked_window()
 	
 	if tracked_winid then

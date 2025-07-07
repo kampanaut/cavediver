@@ -3,9 +3,9 @@
 ---This module contains hooks that extend other domains' state machines
 ---to trigger auto-save functionality when important state changes occur.
 
-local routines = require('domains.storage.routines')
-local states = require('domains.storage.states')
-local storageSM = require('domains.storage.sm')
+local routines = require('cavediver.domains.storage.routines')
+local states = require('cavediver.domains.storage.states')
+local storageSM = require('cavediver.domains.storage.sm')
 
 storageSM:on("{idle,bare}", states.SAVING, "save_history_pre_quit", function(context, _, _)
 	-- Trigger auto-save when entering SAVING state

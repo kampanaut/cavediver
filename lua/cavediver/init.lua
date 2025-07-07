@@ -7,14 +7,14 @@
 local M = {}
 
 -- Import all domains
-local navigation = require('domains.navigation')
-local history = require('domains.history')
-local window = require('domains.window')
-local ui = require('domains.ui')
-local storage = require('domains.storage')
-local engine = require('engine')
+local navigation = require('cavediver.domains.navigation')
+local history = require('cavediver.domains.history')
+local window = require('cavediver.domains.window')
+local ui = require('cavediver.domains.ui')
+local storage = require('cavediver.domains.storage')
+local engine = require('cavediver.engine')
 
-local settings = require('configs')
+local settings = require('cavediver.configs')
 
 -- Export domains for direct access (backward compatibility)
 M.navigation = navigation
@@ -429,7 +429,7 @@ M.get_history_state = function()
 end
 
 M.is_cycling = function()
-	local nav_states = require('domains.navigation.states')
+	local nav_states = require('cavediver.domains.navigation.states')
 	return navigation.sm:state() == nav_states.CYCLING
 end
 

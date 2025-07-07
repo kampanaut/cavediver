@@ -4,15 +4,15 @@
 ---This module provides the API layer and loads extension hooks that coordinate
 ---with other domains' state machines.
 
-local states = require('domains.navigation.states')
-local data = require('domains.navigation.data')
-local routines = require('domains.navigation.routines')
+local states = require('cavediver.domains.navigation.states')
+local data = require('cavediver.domains.navigation.data')
+local routines = require('cavediver.domains.navigation.routines')
 
 -- Load hooks to coordinate with other domains' state machines
-require('domains.navigation.hooks')
+require('cavediver.domains.navigation.hooks')
 
 -- Get navigation state machine for domain coordination
-local NavigationSM = require('domains.navigation.sm')
+local NavigationSM = require('cavediver.domains.navigation.sm')
 
 local M = {
     sm = NavigationSM,      -- The navigation state machine

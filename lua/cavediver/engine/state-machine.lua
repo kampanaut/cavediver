@@ -1,4 +1,4 @@
-local helper = require('engine.helpers')
+local helper = require('cavediver.engine.helpers')
 
 ---State machine implementation for managing states, transitions, and hooks.
 ---

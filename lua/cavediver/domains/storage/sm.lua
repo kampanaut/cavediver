@@ -4,16 +4,16 @@
 ---necessary states and transitions for session persistence operations.
 local storageSM
 
-storageSM = require('engine'):get('storage')
+storageSM = require('cavediver.engine'):get('storage')
 
 if storageSM ~= nil then
 	return storageSM
 end
 
-storageSM = require('engine'):create('storage')
+storageSM = require('cavediver.engine'):create('storage')
 
-local engine = require('engine')
-local states = require('domains.storage.states')
+local engine = require('cavediver.engine')
+local states = require('cavediver.domains.storage.states')
 
 
 

@@ -4,20 +4,20 @@
 ---and status indicators. This module provides the API layer and loads extension
 ---hooks that integrate with other domains' state machines.
 
-local states = require('domains.ui.states')
-local data = require('domains.ui.data')
-local routines = require('domains.ui.routines')
-local history = require('domains.history')
+local states = require('cavediver.domains.ui.states')
+local data = require('cavediver.domains.ui.data')
+local routines = require('cavediver.domains.ui.routines')
+local history = require('cavediver.domains.history')
 
 local bufferline_state = data.bufferline_state
 
-local configs = require("configs")
+local configs = require("cavediver.configs")
 
 -- Load hooks to extend other domains' state machines
-require('domains.ui.hooks')
+require('cavediver.domains.ui.hooks')
 
 -- Get UI state machines for domain coordination
-local ui_machines = require('domains.ui.sm')
+local ui_machines = require('cavediver.domains.ui.sm')
 
 -- The UI domain provides multiple independent state machines for different components
 
@@ -320,7 +320,7 @@ M.bufferline.cokeline = {}
 ---Return a constructed cokeline buffer components.
 ---@return table components
 function M.bufferline.cokeline.create_buffer_components()
-	local colors = require('configs').colors
+	local colors = require('cavediver.configs').colors
 	local ok, mappings = pcall(require, 'cokeline.mappings')
 	if not ok then
 		error("cokeline is not installed. Please install 'willothy/nvim-cokeline' to use this function.")

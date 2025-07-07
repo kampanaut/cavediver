@@ -7,7 +7,7 @@
 ---@class StateMachineFactory
 ---@field private instances table<string, StateMachine> Registry of created state machine instances
 
-local StateMachine = require('engine.state-machine')
+local StateMachine = require('cavediver.engine.state-machine')
 
 local StateMachineFactory = {}
 local instances = {}

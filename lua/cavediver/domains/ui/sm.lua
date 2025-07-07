@@ -3,8 +3,8 @@
 ---This module creates and configures multiple independent state machines
 ---for different UI components (bufferline, winbar, indicators, loop).
 
-local states = require('domains.ui.states')
-local SMFactory = require('engine')
+local states = require('cavediver.domains.ui.states')
+local SMFactory = require('cavediver.engine')
 
 -- Create or get multiple independent UI state machines
 local bufferlineSM = SMFactory:get("ui_bufferline") or SMFactory:create("ui_bufferline")

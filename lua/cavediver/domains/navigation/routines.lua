@@ -3,8 +3,8 @@
 ---This module contains the main business logic for managing navigation modes
 ---that provide coordination context for other domains.
 
-local data = require('domains.navigation.data')
-local history = require('domains.history')
+local data = require('cavediver.domains.navigation.data')
+local history = require('cavediver.domains.history')
 
 local M = {}
 
@@ -65,7 +65,7 @@ end
 function M.find_most_recent_tracked_window()
 	local ctab = vim.api.nvim_get_current_tabpage()
 	local cwin = vim.api.nvim_get_current_win()
-	local history = require('domains.history')
+	local history = require('cavediver.domains.history')
 	
 	-- Check if current window is already tracked
 	local current_buf = vim.api.nvim_win_get_buf(cwin)

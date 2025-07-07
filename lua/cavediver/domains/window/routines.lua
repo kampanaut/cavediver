@@ -4,11 +4,11 @@
 ---relationships within windows, including the complex reconciliation logic
 ---that was previously in sync_detached_history().
 
-local data = require('domains.window.data')
+local data = require('cavediver.domains.window.data')
 
-local history = require('domains.history')
-local loop_sm = require('domains.ui.sm').loop
-local loop_states = require('domains.ui.states').LOOP
+local history = require('cavediver.domains.history')
+local loop_sm = require('cavediver.domains.ui.sm').loop
+local loop_states = require('cavediver.domains.ui.states').LOOP
 
 local M = {}
 
@@ -75,8 +75,8 @@ end
 ---
 ---@return nil
 function M.cleanup_triquetras()
-	local clear_window_display_cache = require("domains.ui").data.clear_window_display_cache
-	local set_cache_from_window_triquetra = require(").ui.routines.set_cache_from_window_triquetra
+	local clear_window_display_cache = require("cavediver.domains.ui").data.clear_window_display_cache
+	local set_cache_from_window_triquetra = require("cavediver").ui.routines.set_cache_from_window_triquetra
 	for winid, triquetra in pairs(data.crux) do
 		local current_bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 		local filepath
@@ -183,7 +183,7 @@ function M.swap_with_secondary(winid)
 		cbufnr = history.get_buffer_from_hash(triquetra.secondary_slot)
 		if cbufnr == nil then
 			cbufnr = history.reopen_filehash(triquetra.secondary_slot)
-			local ui_get_basename = require('domains.ui').routines.get_smart_basename
+			local ui_get_basename = require('cavediver.domains.ui').routines.get_smart_basename
 			if cbufnr == nil then
 				vim.notify(
 					"Removed secondary file not found in filesystem: " .. ui_get_basename(triquetra.secondary_slot),
@@ -236,7 +236,7 @@ function M.swap_with_ternary(winid)
 	local cbufnr = history.get_buffer_from_hash(triquetra.ternary_slot)
 	if cbufnr == nil then
 		cbufnr = history.reopen_filehash(triquetra.ternary_slot)
-		local ui_get_basename = require('domains.ui').routines.get_smart_basename
+		local ui_get_basename = require('cavediver.domains.ui').routines.get_smart_basename
 		if cbufnr == nil then
 			vim.notify("Removed ternary file not found in filesystem: " .. ui_get_basename(triquetra.ternary_slot),
 				vim.log.levels.WARN)
@@ -267,7 +267,7 @@ end
 ---@param winid WinId The target window ID
 ---@return nil
 function M.jump_to_primary(winid)
-	local navigation = require("domains.navigation")
+	local navigation = require("cavediver.domains.navigation")
 	local triquetra = data.get_window_triquetra(winid)
 	if not triquetra then
 		vim.notify("Window with unregistered buffer.", vim.log.levels.WARN)
@@ -275,7 +275,7 @@ function M.jump_to_primary(winid)
 	end
 	if navigation.is_cycling() then
 		local cycling_origins = history.get_cycling_origins(winid)
-		local ui_get_basename = require('domains.ui').routines.get_smart_basename
+		local ui_get_basename = require('cavediver.domains.ui').routines.get_smart_basename
 
 		if not cycling_origins then
 			error("This should not happen. Cycling origins not found for window: " .. winid)
@@ -425,7 +425,7 @@ function M.restore_triquetra_secondary(winid)
 end
 
 function M.repopulate_window_relationships()
-	local set_cache_from_window_triquetra = require("domains.ui").set_cache_from_window_triquetra
+	local set_cache_from_window_triquetra = require("cavediver.domains.ui").set_cache_from_window_triquetra
 	data.crux = {}
 	data.current_window = {}
 

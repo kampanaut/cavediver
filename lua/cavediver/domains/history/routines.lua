@@ -1,4 +1,4 @@
-local data = require("domains.history.data")
+local data = require("cavediver.domains.history.data")
 
 local M = {}
 
@@ -244,8 +244,8 @@ end
 ---@param winid number Window ID to snapshot
 function M.snapshot_origin(winid)
 	-- window's data.crux[winid] is ensured to be non-nil.
-	local get_smart_basename = require('domains.ui.routines').get_smart_basename
-	data.cycling_origins[winid] = require('domains.window').get_triquetra(winid)
+	local get_smart_basename = require('cavediver.domains.ui.routines').get_smart_basename
+	data.cycling_origins[winid] = require('cavediver.domains.window').get_triquetra(winid)
 
 	local current_slot = data.hash_buffer_registry.hashes[vim.api.nvim_win_get_buf(winid)]
 	local secondary_slot = data.cycling_origins[winid].secondary_slot
@@ -568,7 +568,7 @@ function M.cleanup_system()
 	end
 
 	-- 4. Validate triquetra references across windows
-	local window = require('domains.window')
+	local window = require('cavediver.domains.window')
 	for winid, triquetra in pairs(window.data.crux) do
 		local slots_to_check = { triquetra.current_slot, triquetra.secondary_slot, triquetra.ternary_slot, triquetra
 			.primary_buffer }

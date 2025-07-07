@@ -36,8 +36,8 @@
 
 ---@alias WindowSnapshot WindowTriquetra Captured window state before cycling for restoration
 
-local HistorySM = require('domains.history.sm')
-local states = require("domains.history.states")
+local HistorySM = require('cavediver.domains.history.sm')
+local states = require("cavediver.domains.history.states")
 
 ---@type HistoryState
 local corpus = {

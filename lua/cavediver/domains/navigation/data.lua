@@ -1,4 +1,4 @@
-local states = require('domains.navigation.states')
+local states = require('cavediver.domains.navigation.states')
 ---@alias Tabnr number
 
 ---Navigation domain data structures and state management.

@@ -4,17 +4,17 @@
 ---This module provides the API layer and loads extension hooks that integrate
 ---with other domains' state machines.
 
-local states = require('domains.history.states')
-local data = require('domains.history.data')
-local routines = require('domains.history.routines')
+local states = require('cavediver.domains.history.states')
+local data = require('cavediver.domains.history.data')
+local routines = require('cavediver.domains.history.routines')
 
-local configs = require('configs')
+local configs = require('cavediver.configs')
 
 -- Load hooks to extend other domains' state machines
-require('domains.history.hooks')
+require('cavediver.domains.history.hooks')
 
 -- Get history state machine for domain coordination
-local HistorySM = require('domains.history.sm')
+local HistorySM = require('cavediver.domains.history.sm')
 
 local M = {
 	sm = HistorySM,      -- The history state machine

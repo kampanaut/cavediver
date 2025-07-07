@@ -21,7 +21,7 @@ local crux = {}
 ---
 ---@param winid number Window ID to create the relationship for
 local function create_empty_window_buffer_relationship(winid)
-	local history = require('domains.history')
+	local history = require('cavediver.domains.history')
 	local current_slot = history.get_hash_from_buffer(vim.api.nvim_win_get_buf(winid))
 	if not current_slot then
 		error("Cannot create empty window buffer relationship: The window has an unregistered buffer.")
@@ -43,7 +43,7 @@ end
 ---@return WindowTriquetra|nil relationship The window's buffer relationships
 local function get_window_relationships(winid)
     if not crux[winid] then
-		if require('domains.history').get_hash_from_buffer(vim.api.nvim_get_current_buf()) then 
+		if require('cavediver.domains.history').get_hash_from_buffer(vim.api.nvim_get_current_buf()) then 
 			-- print("Made triquetra for window " .. winid)
 			create_empty_window_buffer_relationship(winid)
 		else

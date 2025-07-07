@@ -3,12 +3,12 @@
 ---The storage domain manages session persistence across all domains,
 ---providing save/load functionality and automatic state preservation.
 
-local states = require('domains.storage.states')
-local data = require('domains.storage.data')
-local routines = require('domains.storage.routines')
-local storageSM = require('domains.storage.sm')
+local states = require('cavediver.domains.storage.states')
+local data = require('cavediver.domains.storage.data')
+local routines = require('cavediver.domains.storage.routines')
+local storageSM = require('cavediver.domains.storage.sm')
 
-require('domains.storage.hooks')
+require('cavediver.domains.storage.hooks')
 
 local M = {
 	states = states,
