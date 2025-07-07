@@ -1,0 +1,52 @@
+---@alias hookFunction fun(context: transitionContext, from_state: stateName, to_state: stateName): nil
+---
+---@class tHook
+---@field class number Provides a way to group hooks by class and priority.
+---@field enabled boolean Turn off or on the hook.
+---@field name string The name of the general hook.
+---@field func hookFunction The body of the hook.
+---@field mode_filter transitionModePattern A pattern for registered modes that the hook applies to.
+
+---@class gHook
+---@field class number Provides a way to group hooks by class and priority.
+---@field enabled boolean Turn off or on the hook.
+---@field name string The name of the general hook.
+---@field func hookFunction The body of the hook.
+---@field type "before" | "after" Run this hook before or after the normal hooks.
+---@field mode_filter transitionModePattern A pattern for registered modes that the hook applies to.
+
+-- The name of the state
+---@alias stateName string
+-- Format: `<previous>-><next>`
+---@alias transitionName string
+-- Format: `<previous>-><next>` or `<previous>->*` or `*-><next>`
+---@alias transitionPattern string
+---
+---Format: `mode1`
+---@alias transitionMode string
+---Format: `*` or `{mode1,mode2}` or `mode1`
+---@alias transitionModePattern string
+
+-- Where you save your states, and turn them on or off.
+---@alias stateRegistry table<string, boolean>
+-- Where you save your transitions, and turn them on or off.
+---@alias transitionRegistry table<transitionName, boolean>
+-- Where you store hooks that execute for transitions.
+---@alias transitionBindingsRegistry table<transitionPattern, tHook[]>
+-- Where you store all the added hooks, must have unique names.
+---@alias tHooksRegistry table<string, tHook>
+-- Where you store general hooks that execute for all transitions. Before or after the normal hooks queue.
+---@alias gHooksRegistry gHook[]
+---Mutable data passed through all hooks in the transition pipeline.
+---
+---The transition context carries data between hooks during state transitions.
+---It can be modified by any hook and those changes are visible to subsequent hooks.
+---
+---@class transitionContext
+---@field caller string RESERVED: Name of the state machine that initiated this transition (auto-set)
+---@field [any] any Custom fields: Hooks can add arbitrary fields for passing data between hooks
+
+-- DO NOT SET `caller` manually, it is automatically set by the state machine.
+---@class transitionContextArg
+---@field [any] any Custom fields: Hooks can add arbitrary fields for passing data between hooks
+
