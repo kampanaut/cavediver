@@ -114,8 +114,15 @@ function M.cleanup_triquetras()
 			-- we just remove that current slot from the triquetra, and replace it with ternary, then
 			-- secondary, then primary, then most recent buffer, if the tracked is more than 1.
 			-- print("(2) Deleted window triquetra of bufnr: " .. index)
-			local cbufnr = vim.api.nvim_win_get_buf(winid)
-			local cbufhash = history.routines.get_filehash(vim.api.nvim_buf_get_name(cbufnr))
+			local cbufnr, cbufhash
+			if vim.api.nvim_win_is_valid(winid) then
+				cbufnr = vim.api.nvim_win_get_buf(winid)
+				cbufhash = history.routines.get_filehash(vim.api.nvim_buf_get_name(cbufnr))
+			else
+				data.crux[winid] = nil
+				clear_window_display_cache(winid)
+				return
+			end
 			if cbufhash == triquetra.current_slot then -- it means that the buffer didn't evolved to anything new. it was still deleted, so we fallback.
 				local candidate_bufnr
 				if triquetra.ternary_slot and history.get_buffer_from_hash(triquetra.ternary_slot) then
