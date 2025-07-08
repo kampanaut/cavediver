@@ -72,10 +72,11 @@ function M.find_most_recent_tracked_window()
 	local ctab = vim.api.nvim_get_current_tabpage()
 	local cwin = vim.api.nvim_get_current_win()
 	local history = require('cavediver.domains.history')
+	local window = require('cavediver.domains.window')
 	
 	-- Check if current window is already tracked
 	local current_buf = vim.api.nvim_win_get_buf(cwin)
-	if history.get_hash_from_buffer(current_buf) then
+	if history.get_hash_from_buffer(current_buf) or window.get_triquetra(cwin) then
 		return cwin
 	end
 	
