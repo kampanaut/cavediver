@@ -142,13 +142,6 @@ function M.setup(user_config)
 
 	-- Setup keymaps
 	setup_keymaps(settings.keymaps)
-
-	-- Setup cleanup timer if configured
-	if settings.cleanup_interval and settings.cleanup_interval > 0 then
-		vim.fn.timer_start(settings.cleanup_interval * 1000, function()
-			-- TODO: Implement buffer cleanup routine
-		end, { ['repeat'] = -1 })
-	end
 end
 
 ---Setup debug commands for inspecting internal state

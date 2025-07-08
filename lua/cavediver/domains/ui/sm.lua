@@ -25,12 +25,6 @@ indicatorsSM.current_state = states.INDICATORS.ON
 loopSM:register_state(states.LOOP.SELF)
 loopSM.current_state = states.LOOP.SELF
 
--- Configure loop self-transition for UI updates
-loopSM:on(states.LOOP.SELF, states.LOOP.SELF, "update_ui", function(context, from, to)
-    -- TODO: Call update_bufferline_state() here
-    -- This will be filled in by user
-end, 1, true)
-
 return {
     bufferline = bufferlineSM,
     indicators = indicatorsSM,
