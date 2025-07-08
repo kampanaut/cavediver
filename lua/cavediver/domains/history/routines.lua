@@ -6,6 +6,7 @@ local function is_no_name_buffer(bufnr)
 	local filename = vim.api.nvim_buf_get_name(bufnr)
 
 	return vim.bo[bufnr].buftype == ""  -- Normal buffer (not terminal, help, etc.)
+		and filename:match("://")
 		and filename == ""              -- No filename set
 		and vim.api.nvim_buf_is_loaded(bufnr) -- Buffer is loaded
 end
@@ -145,7 +146,7 @@ function M.update_buffer_history(cbufnr)
 	---@type Filehash
 	local filehash = data.hash_buffer_registry.hashes[cbufnr]
 	if filehash == nil then
-		if vim.bo[cbufnr].buftype == "" and (not filename:match("^term://")) then
+		if vim.bo[cbufnr].buftype == "" and  (not filename:match("://")) then
 			filehash = M.register_buffer(cbufnr)
 		else
 			return false

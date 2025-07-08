@@ -13,7 +13,7 @@ historySM:on("*", states.ATTACHED, "attach_history_update", function(context, _,
 		error("context.buf is nil in attach_history hook")
 	end
 
-	if context.mode == states.mode.DELETE or context.mode == states.mode.RENAME then
+	if context.mode == states.mode.DELETE then
 		routines.update_buffer_history_ordered()
 		routines.update_buffer_history_ordered_nonharpooned()
 	elseif context.mode == states.mode.UPDATE then

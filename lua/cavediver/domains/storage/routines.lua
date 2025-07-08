@@ -165,6 +165,7 @@ local function load_buffer_history(buffers)
 			and vim.api.nvim_buf_is_loaded(bufnr)
 			and (
 				vim.bo[bufnr].buftype == ""
+				or (not vim.api.nvim_buf_get_name(bufnr):match("://"))
 				or vim.bo[bufnr].filetype == "image_nvim"
 			)
 		then
@@ -195,8 +196,9 @@ local function load_window_buffer_relationships(window_buffer, cwd)
 
 	-- get valid windows
 	for _, winid in pairs(vim.api.nvim_list_wins()) do
+		local cbufnr = vim.api.nvim_win_get_buf(winid)
 		if
-			vim.bo[vim.api.nvim_win_get_buf(winid)].buftype == ""
+			vim.bo[cbufnr].buftype == "" and (not vim.api.nvim_buf_get_name(cbufnr):match("://"))
 		then
 			table.insert(starting_windows, winid)
 		end
@@ -345,16 +347,17 @@ local function serialise_window_relationships(cwd)
 		if window.data.crux[winid] ~= nil then -- yes, a direct existence check sorry for breaking encapsulation
 			local wbufnr = vim.api.nvim_win_get_buf(winid)
 
+			local triquetra = window.get_triquetra(winid)
 			if
 				not (
 					vim.bo[wbufnr].buftype == "" or
+					(vim.api.nvim_buf_get_name(wbufnr):match("://") and triquetra) or -- track a window with current buffer that is not tracked but with the current shown bufferr as a not regular file
 					vim.bo[wbufnr].filetype == "image_nvim"
 				)
 			then
 				goto continue
 			end
 
-			local triquetra = window.get_triquetra(winid)
 			local cfilename, sfilename, pfilename, tfilename
 
 			if not triquetra then

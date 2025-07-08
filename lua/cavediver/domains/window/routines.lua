@@ -150,11 +150,20 @@ end
 ---@return nil
 function M.swap_with_secondary(winid)
 	local triquetra = data.get_window_triquetra(winid)
-	local cbufnr
 
 	if not triquetra then
 		vim.notify("Window with unregistered buffer.", vim.log.levels.WARN)
 		return
+	end
+
+	local cbufnr = history.get_buffer_from_hash(triquetra.current_slot)
+
+	-- check if the current buffer of the window is the triquetra current. If not,
+	-- then we just jump to the triquetra current window.
+	if cbufnr and cbufnr ~= vim.api.nvim_win_get_buf(winid) then
+		vim.notify("Jumped back to windows current buffer.", vim.log.levels.INFO)
+		vim.api.nvim_set_current_buf(cbufnr)
+		return -- we just jump.
 	end
 
 	if triquetra.secondary_slot == nil then
@@ -228,12 +237,22 @@ function M.swap_with_ternary(winid)
 		return
 	end
 
+	local cbufnr = history.get_buffer_from_hash(triquetra.current_slot)
+
+	-- check if the current buffer of the window is the triquetra current. If not,
+	-- then we just jump to the triquetra current window.
+	if cbufnr and cbufnr ~= vim.api.nvim_win_get_buf(winid) then
+		vim.notify("Jumped back to windows current buffer.", vim.log.levels.INFO)
+		vim.api.nvim_set_current_buf(cbufnr)
+		return -- we just jump.
+	end
+
+
 	if triquetra.ternary_slot == nil then
 		vim.notify("No ternary buffer to swap with.", vim.log.levels.WARN)
 		return
 	end
 
-	local cbufnr = history.get_buffer_from_hash(triquetra.ternary_slot)
 	if cbufnr == nil then
 		cbufnr = history.reopen_filehash(triquetra.ternary_slot)
 		local ui_get_basename = require('cavediver.domains.ui').routines.get_smart_basename
