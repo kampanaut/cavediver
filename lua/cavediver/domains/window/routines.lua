@@ -85,7 +85,7 @@ function M.cleanup_triquetras()
 			local current_slot_candidate = history.get_hash_from_buffer(vim.api.nvim_get_current_buf())
 			if current_slot_candidate then
 				vim.notify("Healed the triquetra of window " ..
-				winid .. " with current slot: " .. vim.api.nvim_get_current_buf())
+					winid .. " with current slot: " .. vim.api.nvim_get_current_buf())
 				triquetra.current_slot = current_slot_candidate
 				if triquetra.current_slot == triquetra.secondary_slot then
 					triquetra.secondary_slot = nil
@@ -103,14 +103,56 @@ function M.cleanup_triquetras()
 				-- no errors thrown.
 				if history.get_filepath_from_hash(triquetra.current_slot) ~= nil then
 					error("Impossible: current_slot is nil and no buffer is available to set it. " ..
-					(triquetra.current_slot or "") .. " - " .. winid .. " - " .. vim.api.nvim_get_current_buf())
+						(triquetra.current_slot or "") .. " - " .. winid .. " - " .. vim.api.nvim_get_current_buf() .. " - " .. vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()))
 				end
 			end
 		end
-		if history.get_filepath_from_hash(triquetra.current_slot) == nil then -- yes if the noname buffer turns evolved into a terminal, we don't want to track it.
+		if history.get_filepath_from_hash(triquetra.current_slot) == nil then
+			-- yes if the noname buffer turns evolved into a terminal, we don't want to track it.
+			--
+			-- but there is a catch, what if the buffer's file was just deleted along the way? Then
+			-- we just remove that current slot from the triquetra, and replace it with ternary, then
+			-- secondary, then primary, then most recent buffer, if the tracked is more than 1.
 			-- print("(2) Deleted window triquetra of bufnr: " .. index)
-			data.crux[winid] = nil
-			clear_window_display_cache(winid)
+			local cbufnr = vim.api.nvim_win_get_buf(winid)
+			local cbufhash = history.routines.get_filehash(vim.api.nvim_buf_get_name(cbufnr))
+			if cbufhash == triquetra.current_slot then -- it means that the buffer didn't evolved to anything new. it was still deleted, so we fallback.
+				local candidate_bufnr
+				if triquetra.ternary_slot and history.get_buffer_from_hash(triquetra.ternary_slot) then
+					triquetra.current_slot = triquetra.ternary_slot
+					triquetra.ternary_slot = nil
+				elseif triquetra.secondary_slot and history.get_buffer_from_hash(triquetra.secondary_slot) then
+					triquetra.current_slot = triquetra.secondary_slot
+					triquetra.secondary_slot = nil
+				elseif triquetra.primary_buffer and history.get_buffer_from_hash(triquetra.primary_buffer) then
+					triquetra.current_slot = triquetra.primary_buffer
+				elseif #history.get_ordered_buffers() > 0 then
+					local candidate_hash = history.get_hash_from_buffer(history.get_ordered_buffers()[1].buf)
+					if candidate_hash then
+						triquetra.current_slot = candidate_hash
+					else
+						error(
+						"This is impossible. Ordered history buffers should always have a hash associated with it.")
+					end
+				else
+					vim.cmd("enew") -- create a new buffer if nothing is available.
+					return
+				end
+				candidate_bufnr = history.get_buffer_from_hash(triquetra.current_slot)
+				if candidate_bufnr then
+					vim.api.nvim_set_current_buf(candidate_bufnr)
+					vim.defer_fn(function()
+						if vim.api.nvim_buf_is_valid(cbufnr) then
+							vim.cmd("bw! " .. cbufnr)
+						end
+					end, 100)
+				else
+					error("This is impossible. Like how the fuck did the current slot become nil???")
+				end
+			else -- it evolved, just delete it.
+				data.crux[winid] = nil
+				clear_window_display_cache(winid)
+			end
 			return
 		end
 
@@ -265,7 +307,7 @@ function M.swap_with_ternary(winid)
 		else
 			remove_from_closed_buffers(triquetra.ternary_slot)
 			vim.notify("File reopened for ternary slot: " .. ui_get_basename(triquetra.ternary_slot), vim.log.levels
-			.INFO)
+				.INFO)
 		end
 	end
 	local cfilehash = history.get_hash_from_buffer(cbufnr)
