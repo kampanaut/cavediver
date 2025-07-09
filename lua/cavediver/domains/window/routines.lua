@@ -193,7 +193,9 @@ function M.cleanup_triquetras()
 	end
 end
 
----Swap with secondary buffer in the target window.
+---Swap with secondary buffer in the target window. It actually just jumps to the secondary buffer. 
+---
+---The BufEnter autocmd does the swapping dynamically, so this function is just a jump.
 ---
 ---@param winid WinId The target window ID
 ---@return nil
@@ -274,7 +276,9 @@ function M.swap_with_secondary(winid)
 	loop_sm:to(loop_states.SELF)
 end
 
----Swap with ternary buffer in the target window.
+---Swap with ternary buffer in the target window. It actually just jumps to the ternary buffer.
+---
+---The BufEnter autocmd does the swapping dynamically, so this function is just a jump.
 ---
 ---@param winid WinId The target window ID
 ---@return nil
@@ -302,6 +306,7 @@ function M.swap_with_ternary(winid)
 		return
 	end
 
+	cbufnr = history.get_buffer_from_hash(triquetra.ternary_slot)
 	if cbufnr == nil then
 		cbufnr = history.reopen_filehash(triquetra.ternary_slot)
 		local ui_get_basename = require('cavediver.domains.ui').routines.get_smart_basename
