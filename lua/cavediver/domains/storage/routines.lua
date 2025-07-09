@@ -165,9 +165,9 @@ local function load_buffer_history(buffers)
 			and vim.api.nvim_buf_is_loaded(bufnr)
 			and (
 				vim.bo[bufnr].buftype == ""
-				or (not vim.api.nvim_buf_get_name(bufnr):match("://"))
 				or vim.bo[bufnr].filetype == "image_nvim"
 			)
+			and (not vim.api.nvim_buf_get_name(bufnr):match("://"))
 		then
 			history.register_buffer(bufnr)
 		end
