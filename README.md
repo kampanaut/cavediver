@@ -52,11 +52,10 @@ This cavediver plugin saves the session state in your neovim's `data` directory 
             require('cavediver').load_session(vim.loop.cwd())
         end)
     end,
-    depenedencies = {
+    dependencies = {
         "kampanaut/cavediver"
     }
 },
-}
 ```
 
 ### nvim-cokeline setup

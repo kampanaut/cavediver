@@ -543,8 +543,6 @@ function M.repopulate_window_relationships()
 		set_cache_from_window_triquetra(winid)
 		::continue::
 	end
-
-	print_table(data)
 end
 
 return M
