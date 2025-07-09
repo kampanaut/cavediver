@@ -96,71 +96,93 @@ function M.cleanup_triquetras()
 					triquetra.primary_buffer = nil
 				end
 			else
-				-- if it has a filepath mapping then it was registered before. If it was registered
-				-- before and we ended up at this point, it means that this buffer is stale. Something
-				-- must have went wrong. Otherwise, if it's not registered, i.e. empty filepath
-				-- output then that means that we should never consider this in the first place, so
-				-- no errors thrown.
-				if history.get_filepath_from_hash(triquetra.current_slot) ~= nil then
-					error("Impossible: current_slot is nil and no buffer is available to set it. " ..
-						(triquetra.current_slot or "") .. " - " .. winid .. " - " .. vim.api.nvim_get_current_buf() .. " - " .. vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()))
-				end
-			end
-		end
-		if history.get_filepath_from_hash(triquetra.current_slot) == nil then
-			-- yes if the noname buffer turns evolved into a terminal, we don't want to track it.
-			--
-			-- but there is a catch, what if the buffer's file was just deleted along the way? Then
-			-- we just remove that current slot from the triquetra, and replace it with ternary, then
-			-- secondary, then primary, then most recent buffer, if the tracked is more than 1.
-			-- print("(2) Deleted window triquetra of bufnr: " .. index)
-			local cbufnr, cbufhash
-			if vim.api.nvim_win_is_valid(winid) then
-				cbufnr = vim.api.nvim_win_get_buf(winid)
-				cbufhash = history.routines.get_filehash(vim.api.nvim_buf_get_name(cbufnr))
-			else
-				data.crux[winid] = nil
-				clear_window_display_cache(winid)
-				return
-			end
-			if cbufhash == triquetra.current_slot then -- it means that the buffer didn't evolved to anything new. it was still deleted, so we fallback.
-				local candidate_bufnr
-				if triquetra.ternary_slot and history.get_buffer_from_hash(triquetra.ternary_slot) then
-					triquetra.current_slot = triquetra.ternary_slot
-					triquetra.ternary_slot = nil
-				elseif triquetra.secondary_slot and history.get_buffer_from_hash(triquetra.secondary_slot) then
-					triquetra.current_slot = triquetra.secondary_slot
-					triquetra.secondary_slot = nil
-				elseif triquetra.primary_buffer and history.get_buffer_from_hash(triquetra.primary_buffer) then
-					triquetra.current_slot = triquetra.primary_buffer
-				elseif #history.get_ordered_buffers() > 0 then
-					local candidate_hash = history.get_hash_from_buffer(history.get_ordered_buffers()[1].buf)
-					if candidate_hash then
-						triquetra.current_slot = candidate_hash
-					else
-						error(
-						"This is impossible. Ordered history buffers should always have a hash associated with it.")
-					end
+				-- yes if the noname buffer turns evolved into a terminal, we don't want to track it.
+				--
+				-- but there is a catch, what if the buffer's file was just deleted along the way? Then
+				-- we just remove that current slot from the triquetra, and replace it with ternary, then
+				-- secondary, then primary, then most recent buffer, if the tracked is more than 1.
+				-- print("(2) Deleted window triquetra of bufnr: " .. index)
+				local cbufnr, cbufhash
+				if vim.api.nvim_win_is_valid(winid) then
+					cbufnr = vim.api.nvim_win_get_buf(winid)
+					cbufhash = history.routines.get_filehash(vim.api.nvim_buf_get_name(cbufnr))
 				else
-					vim.cmd("enew") -- create a new buffer if nothing is available.
+					-- yes, this line of code appears three times in this condition branch.
+					-- we delete triquetras associated to windows that are not "regular" windows.
+					data.crux[winid] = nil
+					clear_window_display_cache(winid)
 					return
 				end
-				candidate_bufnr = history.get_buffer_from_hash(triquetra.current_slot)
-				if candidate_bufnr then
-					vim.api.nvim_set_current_buf(candidate_bufnr)
-					vim.defer_fn(function()
-						if vim.api.nvim_buf_is_valid(cbufnr) then
-							vim.cmd("bw! " .. cbufnr)
+				if cbufhash == triquetra.current_slot or vim.bo[cbufnr].buftype == "acwrite" then -- it means that the buffer didn't evolved to anything new. it was still deleted, so we fallback.
+					local candidate_bufnr
+					if triquetra.ternary_slot and history.get_buffer_from_hash(triquetra.ternary_slot) then
+						triquetra.current_slot = triquetra.ternary_slot
+						triquetra.ternary_slot = nil
+					elseif triquetra.secondary_slot and history.get_buffer_from_hash(triquetra.secondary_slot) then
+						triquetra.current_slot = triquetra.secondary_slot
+						triquetra.secondary_slot = nil
+					elseif triquetra.primary_buffer and history.get_buffer_from_hash(triquetra.primary_buffer) then
+						triquetra.current_slot = triquetra.primary_buffer
+					elseif history.get_filepath_from_hash(triquetra.current_slot) ~= nil then
+						-- if it has a filepath mapping then it was registered before. If it was registered
+						-- before and we ended up at this point, it means that this buffer is stale. Something
+						-- must have went wrong. Otherwise, if it's not registered, i.e. empty filepath
+						-- output then that means that we should never consider this in the first place, so
+						-- no errors thrown. [edit: no errors thrown as well for the stale window triquetra.]
+
+						-- this comes before healing with ordered history or creating a new NO_NAME buffer since
+						-- it is quite destructive to the triquetra tracking to replace a window triquetra's current slot,
+						-- which the triquetra itself is now considered stale, with a heuristic replacement buffer.
+						-- The implication of this is the stale triquetra SHOULD be removed, as the window it is associated
+						-- with is not a "regular" buffer anymore.
+						--
+						-- This is now an unregular window, because we can't heal it properly anymore and turns out the 
+						-- tracked current_slot buffer was unloaded. So unloaded buffer and no possible healing, that is 
+						-- what we proved in this condition branch. So we just need to nuke this triquetra, since there 
+						-- is no appropriate buffer to set it to without destructively replacing the current slot, since 
+						-- this window is not a "regular" window anymore.
+
+						-- error("Impossible: current_slot is nil and no buffer is available to set it. " ..
+						-- 	(triquetra.current_slot or "") .. " - " .. winid .. " - " .. vim.api.nvim_get_current_buf() .. " - " .. vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()))
+						vim.notify("Cleaning up triquetra of now unregular window" .. winid ..
+							" with current slot: " .. triquetra.current_slot .. " - " ..
+							vim.api.nvim_get_current_buf() .. " - (" .. vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()) .. ")",
+							vim.log.levels.INFO)
+						data.crux[winid] = nil
+						clear_window_display_cache(winid)
+						return
+					elseif #history.get_ordered_buffers() > 0 then
+						local candidate_hash = history.get_hash_from_buffer(history.get_ordered_buffers()[1].buf)
+						if candidate_hash then
+							triquetra.current_slot = candidate_hash
+						else
+							error(
+								"This is impossible. Ordered history buffers should always have a hash associated with it.")
 						end
-					end, 100)
-				else
-					error("This is impossible. Like how the fuck did the current slot become nil???")
+					else
+						vim.cmd("enew") -- create a new buffer if nothing is available.
+						return
+					end
+					if vim.bo[cbufnr].buftype == "acwrite" then -- we skip oil buffers, since they are not file buffers.
+						return
+					end
+					candidate_bufnr = history.get_buffer_from_hash(triquetra.current_slot)
+					if candidate_bufnr then
+						vim.api.nvim_set_current_buf(candidate_bufnr)
+						vim.defer_fn(function()
+							if vim.api.nvim_buf_is_valid(cbufnr) then
+								vim.cmd("bw! " .. cbufnr)
+							end
+						end, 100)
+					else
+						error("This is impossible. Like how the fuck did the current slot become nil???")
+					end
+				else -- it evolved, just delete it.
+					data.crux[winid] = nil
+					clear_window_display_cache(winid)
 				end
-			else -- it evolved, just delete it.
-				data.crux[winid] = nil
-				clear_window_display_cache(winid)
+				return
 			end
-			return
 		end
 
 		filepath = history.get_filepath_from_hash(triquetra.secondary_slot)

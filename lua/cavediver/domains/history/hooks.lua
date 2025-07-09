@@ -57,6 +57,7 @@ vim.api.nvim_create_autocmd("BufDelete", {
 	callback = function(args)
 		-- print("HOOOY")
 		-- print_table(args)
+		-- print("BufDelete"..args.buf .. " - "..vim.api.nvim_buf_get_name(args.buf))
 		historySM:to(historySM:state(), { buf = args.buf }, states.mode.DELETE)
 	end,
 })
@@ -64,6 +65,7 @@ vim.api.nvim_create_autocmd("BufDelete", {
 -- What happens when we enter a buffer?
 vim.api.nvim_create_autocmd("BufEnter", {
 	callback = function(args)
+		-- print("BufEnter"..args.buf .. " - "..vim.api.nvim_buf_get_name(args.buf))
 		historySM:to(historySM:state(), { buf = args.buf }, states.mode.UPDATE)
 	end,
 })
