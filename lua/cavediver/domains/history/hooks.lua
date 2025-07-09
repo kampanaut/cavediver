@@ -89,3 +89,11 @@ vim.api.nvim_create_autocmd("BufFilePost", {
 		historySM:to(historySM:state(), { buf = args.buf }, states.mode.UPDATE)
 	end
 })
+
+
+-- BufFilePre: Clean up old identity
+vim.api.nvim_create_autocmd("WinEnter", {
+	callback = function(args)
+		routines.construct_crux(require("cavediver.domains.navigation").routines.find_most_recent_tracked_window())
+	end
+})

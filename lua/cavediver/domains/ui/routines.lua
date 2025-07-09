@@ -478,9 +478,9 @@ function M.is_real_file(bufnr, win_id)
 	end
 
 	-- In the silence between keystrokes, we find truth
-	local value = (buftype == "" or buftype == "terminal") -- Empty buftype signifies a normal file buffer
+	local value = (buftype == "" or buftype == "terminal" or buftype == "acwrite") -- Empty buftype signifies a normal file buffer
 		and vim.api.nvim_buf_is_loaded(bufnr)
-		and (not vim.api.nvim_buf_get_name(bufnr):match("://"))
+		and (not vim.api.nvim_buf_get_name(bufnr):match("://") or buftype == "acwrite")
 		and not vim.tbl_contains(data.excluded_filetypes, filetype)
 		-- Allow no-name buffers for regular windows, exclude for popups
 		and (bufname ~= "" or win_config.relative == "")

@@ -71,7 +71,6 @@ end
 function M.find_most_recent_tracked_window()
 	local ctab = vim.api.nvim_get_current_tabpage()
 	local cwin = vim.api.nvim_get_current_win()
-	local history = require('cavediver.domains.history')
 	local window = require('cavediver.domains.window')
 	
 	-- Check if current window is already tracked

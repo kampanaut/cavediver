@@ -151,7 +151,7 @@ end
 ---then restores saved buffer access history with original timestamps.
 ---Corresponds to buffers.lua M.load_buffer_history().
 ---
----@param buffers BufferHistoryData Buffer history from buffers.lua M.sequence_buffer_history()
+---@param buffers BufferCruxInternals Buffer history from buffers.lua M.sequence_buffer_history()
 ---@return nil
 local function load_buffer_history(buffers)
 	---TODO: Loading [No Name] buffers with content.
@@ -173,9 +173,11 @@ local function load_buffer_history(buffers)
 		end
 	end
 
-	for saved_filehash, time in pairs(buffers) do
+	for saved_filehash, time in pairs(buffers.global) do
 		history.track_buffer(saved_filehash, time)
 	end
+
+	history.routines.initialise_crux_internals(buffers)
 end
 
 
@@ -301,13 +303,36 @@ end
 ---Creates a copy of the current buffer access history that can be
 ---safely serialized to JSON. Maps filehash to access timestamps.
 ---
----@return BufferHistoryData buffer_history Serializable copy of buffer history
+---@return BufferCruxInternalsSerialised crux_serialised Serializable copy of buffer history
 local function serialise_buffer_history()
-	local buffer_history = {}
-	for filehash, time in pairs(history.get_buffer_history()) do
-		buffer_history[filehash] = time
+	---@type table<string, table<Filehash, integer>>
+	local serialised_window_cruxes = {}
+
+	local compressed_index = 1
+	for _, winid in pairs(vim.api.nvim_list_wins()) do
+		if window.data.crux[winid] ~= nil then -- yes, a direct existence check sorry for breaking encapsulation
+			local wbufnr = vim.api.nvim_win_get_buf(winid)
+
+			local triquetra = window.get_triquetra(winid)
+			if
+				not (
+					vim.bo[wbufnr].buftype == "" or
+					(vim.api.nvim_buf_get_name(wbufnr):match("://") and triquetra) or -- track a window with current buffer that is not tracked but with the current shown bufferr as a not regular file
+					vim.bo[wbufnr].filetype == "image_nvim"
+				)
+			then
+				goto continue
+			end
+
+			serialised_window_cruxes[compressed_index] = history.data.crux_internals.window[winid]
+			compressed_index = compressed_index + 1
+			::continue::
+		end
 	end
-	return buffer_history
+	return {
+		window = serialised_window_cruxes,
+		global = history.data.crux_internals.global
+	}
 end
 
 ---Serialize window buffer relationships for session saving.

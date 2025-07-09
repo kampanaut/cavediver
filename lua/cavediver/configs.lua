@@ -18,6 +18,9 @@
 ---@class CavediverConfig
 local defaults = {
 	session_dir = vim.fn.stdpath("data") .. "/cavediver/sessions/",
+	bufferline = {
+		history_view = "global" -- "global" | "window"
+	},
 	colors = {
 		base = {
 			focused = {
@@ -113,8 +116,8 @@ local defaults = {
 		set_primary = "<M-;><M-x>",
 		close_buffer = "<M-.>",
 	},
-	cleanup_interval = 140,    -- seconds
-	winbar_refresh_interval = 8000 -- milliseconds
+	cleanup_interval = 8000,    -- seconds
+	winbar_refresh_interval = 140 -- milliseconds
 }
 
 return defaults

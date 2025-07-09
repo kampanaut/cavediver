@@ -4,7 +4,8 @@
 ---@alias Filepath string -- File path type alias
 ---
 ---@class HistoryState
----@field crux table<Filehash, Bufnr> File hash to access time mapping (hash → timestamp)
+---@field crux table<Filehash, integer> File hash to access time mapping (hash → timestamp)
+---@field crux_internals BufferCruxInternals Internal data structures for crux construction.
 ---@field ordered OrderedHistory Ordered buffer lists for recency-based operations
 ---@field history_index number Next available timestamp for buffer access tracking
 ---@field hash_buffer_registry BuffersRegistry Bidirectional file hash ↔ buffer number mappings
@@ -12,6 +13,14 @@
 ---@field cycling_origins table<number, WindowSnapshot> Window states before cycling began (winid → snapshot)
 ---@field closed_buffers Filehash[] Stack of closed buffer filehashes that can be reopened via hash_filepath_registry
 ---@field noname_content table<Filepath, NoNameBufferContent> Content storage for [No Name] buffers
+
+---@class BufferCruxInternals
+---@field window table<WinId, table<Filehash, integer>> -- Window-specific crux: winid → file_hash → access_time. Can be partial
+---@field global table<Filehash, integer> -- the fallback global crux: file_hash → access_time
+---
+---@class BufferCruxInternalsSerialised
+---@field window table<string, table<Filehash, integer>> -- Window-specific crux: winid → file_hash → access_time. Can be partial
+---@field global table<Filehash, integer> -- the fallback global crux: file_hash → access_time
 
 ---@class NoNameBufferContent [No Name] buffer content and metadata for restoration
 ---@field lines string[] Buffer content as array of lines
@@ -47,6 +56,10 @@ local corpus = {
 	end,
 	-- Core buffer access history: file_hash → access_time
 	crux = {},
+	crux_internals = {
+		window = {},
+		global = {},
+	},
 	-- Ordered buffer lists for recency-based operations
 	ordered = {
 		crux = {},        -- All buffers ordered by recency

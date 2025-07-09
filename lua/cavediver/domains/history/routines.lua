@@ -1,4 +1,5 @@
 local data = require("cavediver.domains.history.data")
+local configs = require("cavediver.configs")
 
 local M = {}
 
@@ -97,23 +98,95 @@ function M.unregister_filepath(filepath)
 	data.hash_filepath_registry.filepaths[filehash] = nil
 end
 
+---Initialize the history crux and internal crux structures.
+---
+---@param crux_internals BufferCruxInternals
+---@return nil
+function M.initialise_crux_internals(crux_internals)
+	local starting_windows = {}
+
+	data.crux_internals.window = {}
+
+	-- get valid windows
+	for _, winid in pairs(vim.api.nvim_list_wins()) do
+		local cbufnr = vim.api.nvim_win_get_buf(winid)
+		if
+			vim.bo[cbufnr].buftype == "" and (not vim.api.nvim_buf_get_name(cbufnr):match("://"))
+		then
+			table.insert(starting_windows, winid)
+		end
+	end
+
+	for index, window_crux_serialised in ipairs(crux_internals.window) do
+		local actual_winid = starting_windows[index]
+		data.crux_internals.window[actual_winid] = window_crux_serialised
+	end
+	data.crux_internals.global = crux_internals.global
+	M.construct_crux(vim.api.nvim_get_current_win())
+end
+
+---Construct the crux from the internal cruxes, from the global and
+---a window specific crux, if winid is provided. Otherwise it will
+---construct the crux with only the global crux.
+---
+---This function merges the global crux with the window-specific crux
+---
+---@param winid WinId|nil
+function M.construct_crux(winid)
+	local global_copy = vim.fn.deepcopy(data.crux_internals.global)
+	if not winid or configs.bufferline.history_view == "global" then
+		data.crux = global_copy
+		return
+	end
+
+	if data.crux_internals.window[winid] == nil or next(data.crux_internals.window[winid]) == nil then
+		data.crux_internals.window[winid] = {}
+		data.crux = global_copy
+		return
+	end
+
+	local window_buffers = {}
+	for key, value in pairs(data.crux_internals.window[winid]) do
+		table.insert(window_buffers, { hash = key, time = value })
+	end
+	table.sort(window_buffers, function(a, b) return a.time > b.time end)
+
+	data.history_index = data.history_index + #window_buffers - 1
+	-- Assign increments based on rank
+	for rank, buffer in ipairs(window_buffers) do
+		global_copy[buffer.hash] = data.history_index - rank + 1
+	end
+
+	data.crux = global_copy
+end
+
 ---Track buffer access in the history timeline.
 ---
 ---Adds or updates buffer access time in the history crux. If no time is provided,
 ---uses current history index and increments it. Used for both new access tracking
 ---and restoring saved session data.
 ---
----@param filehash string File hash of the buffer to track
+---@param filehash Filehash File hash of the buffer to track
 ---@param time number|nil Access time index (nil = use current index)
 function M.track_buffer(filehash, time)
 	if time == nil then
 		data.crux[filehash] = data.history_index
+		data.crux_internals.global[filehash] = data.history_index
 		data.history_index = data.history_index + 1
 	else
 		data.crux[filehash] = time
+		data.crux_internals.global[filehash] = data.history_index
 		if data.history_index <= time then
 			data.history_index = time + 1
 		end
+	end
+
+	local winid = require("cavediver.domains.navigation.routines").find_most_recent_tracked_window()
+	if winid then
+		if data.crux_internals.window[winid] == nil then
+			data.crux_internals.window[winid] = {}
+		end
+		data.crux_internals.window[winid][filehash] = data.history_index - 1
 	end
 end
 
@@ -125,6 +198,16 @@ function M.untrack_buffer(bufnr)
 	local filehash = data.hash_buffer_registry.hashes[bufnr]
 	if data.crux[filehash] ~= nil then
 		data.crux[filehash] = nil
+	end
+
+	if data.crux_internals.global[filehash] ~= nil then
+		data.crux_internals.global[filehash] = nil
+	end
+
+	for winid, _ in pairs(data.crux_internals.window) do
+		if filehash ~= nil then 
+			data.crux_internals.window[winid][filehash] = nil
+		end
 	end
 
 	M.update_buffer_history_ordered()
@@ -146,7 +229,7 @@ function M.update_buffer_history(cbufnr)
 	---@type Filehash
 	local filehash = data.hash_buffer_registry.hashes[cbufnr]
 	if filehash == nil then
-		if vim.bo[cbufnr].buftype == "" and  (not filename:match("://")) then
+		if vim.bo[cbufnr].buftype == "" and (not filename:match("://")) then
 			filehash = M.register_buffer(cbufnr)
 		else
 			return false
