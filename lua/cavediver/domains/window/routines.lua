@@ -111,7 +111,7 @@ function M.cleanup_triquetras()
 					-- we delete triquetras associated to windows that are not "regular" windows.
 					data.crux[winid] = nil
 					clear_window_display_cache(winid)
-					return
+					goto continue
 				end
 				if cbufhash == triquetra.current_slot or vim.bo[cbufnr].buftype == "acwrite" then -- it means that the buffer didn't evolved to anything new. it was still deleted, so we fallback.
 					local candidate_bufnr
@@ -150,7 +150,7 @@ function M.cleanup_triquetras()
 							vim.log.levels.INFO)
 						data.crux[winid] = nil
 						clear_window_display_cache(winid)
-						return
+						goto continue
 					elseif #history.get_ordered_buffers() > 0 then
 						local candidate_hash = history.get_hash_from_buffer(history.get_ordered_buffers()[1].buf)
 						if candidate_hash then
@@ -161,10 +161,10 @@ function M.cleanup_triquetras()
 						end
 					else
 						vim.cmd("enew") -- create a new buffer if nothing is available.
-						return
+						goto continue
 					end
 					if vim.bo[cbufnr].buftype == "acwrite" then -- we skip oil buffers, since they are not file buffers.
-						return
+						goto continue
 					end
 					candidate_bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 					if candidate_bufnr then
@@ -181,7 +181,7 @@ function M.cleanup_triquetras()
 					data.crux[winid] = nil
 					clear_window_display_cache(winid)
 				end
-				return
+				goto continue
 			end
 		end
 
@@ -212,6 +212,7 @@ function M.cleanup_triquetras()
 			triquetra.primary_buffer = nil
 		end
 		set_cache_from_window_triquetra(winid)
+		::continue::
 	end
 end
 
