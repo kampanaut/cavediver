@@ -10,6 +10,7 @@ helps you visualise it more easier for yah.
 - resession.nvim
 - nvim-cokeline
 - harpoon (harpoon feature still coupled with the plugin, working on togglable option)
+- openssl (system installed, used for hashing file names and  directories)
 
 ## Installation
 
