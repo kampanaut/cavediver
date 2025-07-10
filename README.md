@@ -273,6 +273,15 @@ The cavediver plugin tracks windows showing regular file buffers. When a window 
 
 A window triquetra is a data structure that stores the window's triquetra slots: current buffer, ternary buffer, secondary buffer, and primary buffer. Each type of slot has their own means of updating themselves.
 
+Winbar UI:
+```text
+⦉32⦊ [7] history/init.lua    ⟦9⟧ window/routines.lua
+```
+
+`⦉32⦊` is the ternary buffer's buffer number.
+`[7] history/init.lua` is the current buffer.
+`⟦9⟧ window/routines.lua` is the secondary buffer.
+
 **Ternary slot**
 
 The ternary slot updates every time you jump to a new buffer. The current buffer you had will now become the ternary buffer time. And the new buffer will become the current buffer. It's your previous buffer, basically. But it won't get modified when you select a buffer dueing cycling mode, via `<m-v>`.
