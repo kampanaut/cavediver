@@ -268,4 +268,47 @@ local defaults = {
 
 ### Window Triquetras
 
-For each window that is trackable 
+The cavediver plugin tracks windows showing regular file buffers. When a window switches to a non-regular buffer then it will clean the triquetra associated to that window. Each window has their own tiquetra. 
+
+A window triquetra is a data structure that stores the window's triquetra slots: current buffer, ternary buffer, secondary buffer, and primary buffer. Each type of slot has their own means of updating themselves.
+
+**Ternary slot**
+
+The ternary slot updates every time you jump to a new buffer. The current buffer you had will now become the ternary buffer time. And the new buffer will become the current buffer. It's your previous buffer, basically. But it won't get modified when you select a buffer dueing cycling mode, via `<m-v>`.
+
+Everytime you jump, if there is a ternary buffer, the system records your current buffer's ternary buffer, before the current buffer is replaced. So when you go back to that current buffer and want to bring back what was once before, you can do it with `<m-;><m-r>`.
+
+**Secondary slot**
+
+The secondary slot only updates when you say so. This is your stow slot. If you have a buffer you want to keep before jumping, this is your way. To jump to the secondary buffer, simply press `<m-f>`. The current buffer will become the secondary buffer.
+
+Every time you jump to secondary the system also records the current buffers, secondary – just the same as ternary's way but with keys `<m-;><m-t>`
+
+**Primary Slot**
+
+The primary buffer is the window's "mark."
+So if you have a buffer of interest that you don't want to lose your hands on, then simply make it a primary buffer, so that no matter how much you kept jumping, you can bring it back to your reach with `<m-;><m-f>`
+
+**Notes**
+
+These only works for regular file buffers. The cavediver plugin, only tracks regular file buffers. Makes it easy to deal with cross-session persistence. 
+
+A buffer cannot occur more than once in a window triquetra.
+
+## Bufferline
+
+As you can see the buffers shown in the bufferline are color coded for better experience and it is sorted by buffer visits. The most recent appears on the left. This is really helpful on trying to know how you ended up with your current buffer and not solely depending on the `<c-i>` & `<c-o>`. 
+
+There is an option `bufferline.history_view`, and this dictates whether to sort the buffers with the global visit history or the current window's own visit history. 
+
+**bufferline.history_view = "window"**
+
+Window-specific history is a recent addition and is really nice on seeing the bufferline not being cluttered with your previous window's series of buffer jumps. 
+
+### Cycling
+
+`<m-n>` and `<m-m>` calls cokeline's cycle function and this makes the whole cavediver plugin be put into "cycling" mode. You will see the change of mode
+ with the colors of the triquetra winbar and cokeline bufferline. 
+
+You will notice that no matter how you cycle, the current slot buffer doesn't change. It is because during cycling mode, the cavediver plugin has stopped tracking visits. You need to do `<m-v>` to select the buffer you are currently and quit cycling mode. 
+
