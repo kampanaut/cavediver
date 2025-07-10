@@ -329,7 +329,17 @@ local function construct_winbar_string(winid, theme)
 	end
 
 	if triquetra.current_bufnr == nil then
-		error("What the fuck. This is impossible. Current buffer is fucking nil? - " .. winid)
+		local window_triquetra = window.get_triquetra(winid)
+		local debug_info = {
+			winid = winid,
+			current_slot = window_triquetra and window_triquetra.current_slot or "nil",
+			filepath_exists = window_triquetra and window_triquetra.current_slot and history.get_filepath_from_hash(window_triquetra.current_slot) or "lookup_failed",
+			buffer_exists = window_triquetra and window_triquetra.current_slot and history.get_buffer_from_hash(window_triquetra.current_slot) or "lookup_failed",
+			actual_winbuf = vim.api.nvim_win_get_buf(winid)
+		}
+		vim.notify("WINBAR STATE CORRUPTION: current_bufnr is nil | " .. vim.inspect(debug_info), vim.log.levels.ERROR)
+		vim.wo[winid].winbar = ""
+		return
 	end
 
 	if vim.bo[triquetra.current_bufnr].modified then
