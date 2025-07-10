@@ -27,8 +27,8 @@ This works for all plugin managers.
         dependencies = {
 			"ThePrimeagen/harpoon",
             -- resession.nvim and nvim-cokeline, requires this plugin.
-      }
 	}
+}
 ```
 
 ### Resession.nvim setup
@@ -278,9 +278,9 @@ Winbar UI:
 ⦉32⦊ [7] history/init.lua    ⟦9⟧ window/routines.lua
 ```
 
-`⦉32⦊` is the ternary buffer's buffer number.
-`[7] history/init.lua` is the current buffer.
-`⟦9⟧ window/routines.lua` is the secondary buffer.
+- `⦉32⦊` is the ternary buffer's buffer number.
+- `[7] history/init.lua` is the current buffer.
+- `⟦9⟧ window/routines.lua` is the secondary buffer.
 
 **Ternary slot**
 
