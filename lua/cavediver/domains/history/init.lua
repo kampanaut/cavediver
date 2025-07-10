@@ -42,15 +42,34 @@ function M.init_cleanup_timer()
 			-- Only notify about significant cleanup
 			local total_cleaned = report.orphaned_history + report.invalid_closed_buffers + report.stale_hash_entries
 			if total_cleaned > 0 then
-				vim.notify(string.format("CAVEDIVER CLEANUP REPORT:\n" ..
-					"  Orphaned history entries: %d\n" ..
-					"  Invalid closed buffers: %d\n" ..
-					"  Stale hash entries: %d\n" ..
-					"  Total cleaned: %d",
-					report.orphaned_history,
-					report.invalid_closed_buffers,
-					report.stale_hash_entries,
-					total_cleaned), vim.log.levels.INFO)
+				local output = { "CAVEDIVER CLEANUP REPORT:" }
+				table.insert(output, string.format("  Total cleaned: %d", total_cleaned))
+				
+				if #report.orphaned_hashes > 0 then
+					table.insert(output, "  Orphaned files:")
+					for _, hash in ipairs(report.orphaned_hashes) do
+						local path = data.hash_filepath_registry.filepaths[hash] or hash
+						table.insert(output, "    - " .. path)
+					end
+				end
+				
+				if #report.invalid_closed_hashes > 0 then
+					table.insert(output, "  Invalid closed files:")
+					for _, hash in ipairs(report.invalid_closed_hashes) do
+						local path = data.hash_filepath_registry.filepaths[hash] or hash
+						table.insert(output, "    - " .. path)
+					end
+				end
+				
+				if #report.stale_hashes > 0 then
+					table.insert(output, "  Stale files:")
+					for _, hash in ipairs(report.stale_hashes) do
+						local path = data.hash_filepath_registry.filepaths[hash] or hash
+						table.insert(output, "    - " .. path)
+					end
+				end
+				
+				vim.notify(table.concat(output, "\n"), vim.log.levels.INFO)
 			end
 		end))
 	end

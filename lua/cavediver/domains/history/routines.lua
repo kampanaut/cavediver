@@ -243,8 +243,8 @@ function M.update_buffer_history(cbufnr)
 		then
 			filehash = M.get_filehash(filename)
 		else
-			M.unregister_buffer(cbufnr) -- clean this up. this buffer evolved into something we don't like.
 			M.untrack_buffer(cbufnr)
+			M.unregister_buffer(cbufnr) -- clean this up. this buffer evolved into something we don't like.
 			M.unregister_filepath(filename)
 			return false
 		end
@@ -591,8 +591,11 @@ end
 function M.cleanup_system()
 	local report = {
 		orphaned_history = 0,
+		orphaned_hashes = {},
 		invalid_closed_buffers = 0,
+		invalid_closed_hashes = {},
 		stale_hash_entries = 0,
+		stale_hashes = {},
 		invalid_triquetra_refs = 0,
 		updated_lists = false
 	}
@@ -613,6 +616,7 @@ function M.cleanup_system()
 				 data.crux_internals.window[winid][filehash] = nil
 			end
 		end
+		table.insert(report.orphaned_hashes, filehash)
 		report.orphaned_history = report.orphaned_history + 1
 	end
 
@@ -641,6 +645,8 @@ function M.cleanup_system()
 
 	-- Remove invalid closed buffers (reverse order to maintain indices)
 	for i = #invalid_closed, 1, -1 do
+		local filehash = data.closed_buffers[invalid_closed[i]]
+		table.insert(report.invalid_closed_hashes, filehash)
 		table.remove(data.closed_buffers, invalid_closed[i])
 		report.invalid_closed_buffers = report.invalid_closed_buffers + 1
 	end
@@ -655,6 +661,7 @@ function M.cleanup_system()
 
 	for _, entry in ipairs(stale_bufnrs) do
 		local filehash, bufnr = entry[1], entry[2]
+		table.insert(report.stale_hashes, filehash)
 		data.hash_buffer_registry.buffers[filehash] = nil
 		data.hash_buffer_registry.hashes[bufnr] = nil
 		report.stale_hash_entries = report.stale_hash_entries + 1
@@ -706,7 +713,33 @@ function M.force_cleanup()
 	end
 
 	if #messages > 0 then
-		vim.notify("Cleanup completed: " .. table.concat(messages, ", "), vim.log.levels.INFO)
+		local output = { "Cleanup completed: " .. table.concat(messages, ", ") }
+		
+		if #report.orphaned_hashes > 0 then
+			table.insert(output, "Orphaned files:")
+			for _, hash in ipairs(report.orphaned_hashes) do
+				local path = data.hash_filepath_registry.filepaths[hash] or hash
+				table.insert(output, "  - " .. path)
+			end
+		end
+		
+		if #report.invalid_closed_hashes > 0 then
+			table.insert(output, "Invalid closed files:")
+			for _, hash in ipairs(report.invalid_closed_hashes) do
+				local path = data.hash_filepath_registry.filepaths[hash] or hash
+				table.insert(output, "  - " .. path)
+			end
+		end
+		
+		if #report.stale_hashes > 0 then
+			table.insert(output, "Stale files:")
+			for _, hash in ipairs(report.stale_hashes) do
+				local path = data.hash_filepath_registry.filepaths[hash] or hash
+				table.insert(output, "  - " .. path)
+			end
+		end
+		
+		vim.notify(table.concat(output, "\n"), vim.log.levels.INFO)
 	else
 		vim.notify("System cleanup completed - no issues found", vim.log.levels.INFO)
 	end
