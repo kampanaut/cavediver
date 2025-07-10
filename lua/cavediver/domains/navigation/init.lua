@@ -55,7 +55,7 @@ function M.cycle_left()
 		window = {
 			current_crux = vim.api.nvim_get_current_win()
 		}
-	})
+	}, states.mode.CYCLE)
 end
 
 function M.cycle_right()
@@ -64,7 +64,7 @@ function M.cycle_right()
 		window = {
 			current_crux = vim.api.nvim_get_current_win()
 		}
-	})
+	}, states.mode.CYCLE)
 end
 
 function M.select_buffer()
@@ -72,7 +72,7 @@ function M.select_buffer()
 		history = {
 			cbufnr = vim.api.nvim_get_current_buf()
 		}
-	})
+	}, states.mode.CYCLE)
 end
 
 M.toggle_window = routines.toggle_window

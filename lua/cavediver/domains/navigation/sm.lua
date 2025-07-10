@@ -26,4 +26,7 @@ NavigationSM:register_state(states.FILE_PICKER)
 -- Set initial state
 NavigationSM.current_state = states.NORMAL
 
+NavigationSM:register_mode(states.mode.CYCLE)
+NavigationSM:register_mode(states.mode.WINENTER)
+
 return NavigationSM

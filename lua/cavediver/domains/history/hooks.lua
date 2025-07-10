@@ -3,6 +3,9 @@ local historySM = require("cavediver.domains.history.sm")
 local states = require('cavediver.domains.history.states')
 local data = require('cavediver.domains.history.data')
 
+local navigationSM = require('cavediver.domains.navigation.sm')
+local navigationSMStates = require('cavediver.domains.navigation.states')
+
 
 local routines = require("cavediver.domains.history.routines")
 
@@ -52,6 +55,10 @@ historySM:on("*", "*", "handle_deletion", function(context, from, to)
 	end
 end, 0, true, states.mode.DELETE)
 
+navigationSM:on("*", "*", "winenter_update_history_view", function(context)
+	routines.construct_crux(require("cavediver.domains.navigation").routines.find_most_recent_tracked_window())
+end, 3, true, navigationSMStates.mode.WINENTER)
+
 -- What happens when a buffer is deleted?
 vim.api.nvim_create_autocmd("BufDelete", {
 	callback = function(args)
@@ -87,13 +94,5 @@ vim.api.nvim_create_autocmd("BufFilePost", {
 		-- print(vim.bo[args.buf].buftype)
 		-- print(args.file)
 		historySM:to(historySM:state(), { buf = args.buf }, states.mode.UPDATE)
-	end
-})
-
-
--- BufFilePre: Clean up old identity
-vim.api.nvim_create_autocmd("WinEnter", {
-	callback = function(args)
-		routines.construct_crux(require("cavediver.domains.navigation").routines.find_most_recent_tracked_window())
 	end
 })

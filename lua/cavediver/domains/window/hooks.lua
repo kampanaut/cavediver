@@ -101,14 +101,12 @@ history.sm:on(history.states.DETACHED, history.states.DETACHED, "nondisplacement
 
 end, 2, true, history.states.mode.UPDATE)
 
+navigation.sm:on("*", "*", "winenter_track_current_window", function(context)
+	data.current_window = vim.api.nvim_get_current_win()
+end, 2, true, navigation.states.mode.WINENTER)
+
 vim.api.nvim_create_autocmd("WinClosed", {
 	callback = function(args)
 		data.crux[tonumber(args.file)] = nil
-	end,
-})
-
-vim.api.nvim_create_autocmd("WinEnter", {
-	callback = function()
-		data.current_window = vim.api.nvim_get_current_win()
 	end,
 })

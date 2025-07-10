@@ -10,6 +10,10 @@ local navigation_state = {
 	NORMAL = "normal",
 	CYCLING = "cycling",
 	FILE_PICKER = "file_picker",
+	mode = {
+		CYCLE = "cycle",       -- Mode for cycling through buffers, history detached
+		WINENTER = "winenter"  -- Mode for entering a window, typically reattaching history
+	}
 }
 
 ---@class NavigationModule

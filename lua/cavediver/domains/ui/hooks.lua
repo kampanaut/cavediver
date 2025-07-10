@@ -9,6 +9,7 @@ local history = require('cavediver.domains.history')
 local states = require('cavediver.domains.ui.states')
 local data = require('cavediver.domains.ui.data')
 local routines = require('cavediver.domains.ui.routines')
+local navigation = require('cavediver.domains.navigation')
 
 uiMachines.loop:on("*", states.LOOP.SELF, "update_ui_state", function()
 	local navigation = require('cavediver.domains.navigation')
@@ -33,6 +34,10 @@ history.sm:on(history.states.DETACHED, history.states.DETACHED, "refresh_ui_deta
 	uiMachines.loop:to(states.LOOP.SELF)
 end, 3, true, history.states.mode.UPDATE)
 
+navigation.sm:on("*", "*", "winenter_update_ui", function(context)
+	uiMachines.loop:to(states.LOOP.SELF)
+end, 2, true, navigation.states.mode.WINENTER)
+
 
 -- Clear display name cache on buffer changes for accurate basename display
 vim.api.nvim_create_autocmd({ "BufAdd", "BufDelete", "BufFilePost", "BufWritePost" }, {
@@ -45,12 +50,6 @@ vim.api.nvim_create_autocmd({ "VimResized" }, {
 	callback = function()
 		routines.debounced_update()
 	end,
-})
-
-vim.api.nvim_create_autocmd({ "WinEnter"}, {
-	callback = function ()
-		uiMachines.loop:to(states.LOOP.SELF)
-	end
 })
 
 vim.api.nvim_create_autocmd({ "BufModifiedSet" }, {
