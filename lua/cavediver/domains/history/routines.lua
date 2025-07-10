@@ -607,6 +607,12 @@ function M.cleanup_system()
 
 	for _, filehash in ipairs(orphaned_hashes) do
 		data.crux[filehash] = nil
+		data.crux_internals.global[filehash] = nil
+		for winid, _ in pairs(data.crux_internals.window) do
+			if data.crux_internals.window[winid][filehash] then
+				 data.crux_internals.window[winid][filehash] = nil
+			end
+		end
 		report.orphaned_history = report.orphaned_history + 1
 	end
 
