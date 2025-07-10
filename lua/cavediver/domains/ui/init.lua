@@ -290,7 +290,7 @@ local function get_theme_fg_by_slot(bufnr)
 	if bufnr == ctriquetra.secondary_bufnr then
 		return configs.colors.secondary.focused.bufnr
 	elseif bufnr == ctriquetra.primary_bufnr and bufnr == ctriquetra.current_bufnr then
-		return configs.colors.primary.focused.bufnr
+		return configs.colors.primary.active
 	elseif bufnr == ctriquetra.current_bufnr then
 		return configs.colors.current.focused.bufnr
 	elseif bufnr == ctriquetra.ternary_bufnr then
