@@ -630,6 +630,9 @@ function M.cleanup_system()
 			(
 				not match_status and
 				vim.fn.filereadable(filepath) == 0
+			) or
+			(
+				data.hash_buffer_registry.buffers[filehash] ~= nil
 			)
 		then
 			table.insert(invalid_closed, i)
