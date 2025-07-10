@@ -19,14 +19,14 @@ This works for all plugin managers.
 ### lazy.nvim (An example)
 
 ```lua
-	{
-		"kampanaut/cavediver",
-		-- dir = "~/Projects/nvim/cavediver",
-		config = true
+{
+	"kampanaut/cavediver",
+	-- dir = "~/Projects/nvim/cavediver",
+	config = true
 
         dependencies = {
-			"ThePrimeagen/harpoon",
-            -- resession.nvim and nvim-cokeline, requires this plugin.
+		"ThePrimeagen/harpoon",
+		-- resession.nvim and nvim-cokeline, requires this plugin.
 	}
 }
 ```
