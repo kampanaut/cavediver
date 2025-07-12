@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a **buffer relationship management system** that preserves your working context during complex development workflows. Have you ever jumped so many times, jumping to definitions, across files, and then suddenly you just felt lost? Well... this plugin **maintains persistent buffer relationships** and enables **non-destructive exploration** so you can fearlessly navigate codebases while preserving your working context across sessions.
+This is a **navigation context manager system** that visualizes your working context during _convoluted development workflows_. Have you ever jumped so many times, jumping to definitions, across files, and then suddenly you just felt lost? Like you ask yourself, _how did I end up here?_ Well... this plugin **helps you visualize the current context of where are you at** and enables a way of **non-destructive exploration** so you can fearlessly navigate codebases while preserving your working context across sessions also.
 
 ### Key Features
 
