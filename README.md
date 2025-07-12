@@ -2,8 +2,24 @@
 
 ## Introduction
 
-This is a navigation plugin. Have you ever jumped so many times, jumping to definitions, across files, and then suddenly you just felt lost? Well... this plugin 
-helps you visualise it more easier for yah.
+This is a **buffer relationship management system** that preserves your working context during complex development workflows. Have you ever jumped so many times, jumping to definitions, across files, and then suddenly you just felt lost? Well... this plugin **maintains persistent buffer relationships** and enables **non-destructive exploration** so you can fearlessly navigate codebases while preserving your working context across sessions.
+
+### Key Features
+
+- **Triquetra Buffer System**: Each window maintains current/secondary/ternary buffer relationships with a primary buffer
+- **Session Persistence**: Buffer relationships survive restarts through hash-based file identification  
+- **Cycling Mode**: Explore buffers without losing your working context
+- **Context Preservation**: Remembers where buffers came from for restoration
+- **Buffer Lifecycle**: Closed buffers reopen when accessed through relationships
+- **Visual Feedback**: Color-coded bufferline and winbar show buffer relationships
+- **Per-Window Tracking**: Independent buffer relationships for each window
+
+## Demo
+
+<video width="800" controls autoplay muted loop>
+  <source src="demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ## Requirements
 
@@ -20,14 +36,13 @@ This works for all plugin managers.
 
 ```lua
 {
-	"kampanaut/cavediver",
-	-- dir = "~/Projects/nvim/cavediver",
-	config = true
-
+    "kampanaut/cavediver",
+    -- dir = "~/Projects/nvim/cavediver",
+    config = true
         dependencies = {
-		"ThePrimeagen/harpoon",
-		-- resession.nvim and nvim-cokeline, requires this plugin.
-	}
+            "ThePrimeagen/harpoon",
+            -- resession.nvim and nvim-cokeline, requires this plugin.
+        }
 }
 ```
 
@@ -161,107 +176,107 @@ You can start by just modifying the base colors
 
 ```lua
 local defaults = {
-	session_dir = vim.fn.stdpath("data") .. "/cavediver/sessions/",
-	bufferline = {
-		history_view = "global" -- "global" | "window"
-	},
-	colors = {
-		base = {
-			focused = {
-				fg = "#D5C4A1",
-				bg = "#151515",
-			},
-			unfocused = {
-				fg = "#504945",
-				bg = "#151515"
-			},
-		},
-		current = {
-			focused = {
-				filename = "#A9B665",
-				bufnr = "#A9B665",
-			},
-			unfocused = {
-				filename = "#504945",
-				bufnr = "#504945",
-			}
-		},
-		secondary = {
-			focused = {
-				filename = "#A9B665",
-				bufnr = "#D8A657"
-			},
-			unfocused = {
-				filename = "#504945",
-				bufnr = "#504945",
-			},
-		},
-		ternary = {
-			focused = {
-				filename = "#8d965e",
-				bufnr = "#8d965e"
-			},
-			unfocused = {
-				filename = "#504945",
-				bufnr = "#504945",
-			},
-		},
-		primary = {
-			active = "#FFAF00",
-			inactive = "#504945",
-			unfocused = "#504945"
-		},
-		harpooned = {
-			unfocused = {
-				fg = "#5d6699",
-			}
-		},
-		both_way_arrow = {
-			focused = "#5F87AF",
-			unfocused = "#5F87AF"
-		},
-		cokeline = {
-			is_picking_close = "#a05959",
-			is_picking_focus = "#d7d7a5",
-			bg = {
-				detached = {
-					focused = "#2B2A33",
-					unfocused = "#020202",
-				},
-				attached = "#151515"
-			},
-			fg = {
-				focused = "#988E75",
-				unfocused = "#6c6c6c"
-			},
-		}
-	},
-	keymaps = {
-		-- Buffer lifecycle
-		reopen_last_closed = "<M-S-w>",
+    session_dir = vim.fn.stdpath("data") .. "/cavediver/sessions/",
+    bufferline = {
+        history_view = "global" -- "global" | "window"
+    },
+    colors = {
+        base = {
+            focused = {
+                fg = "#D5C4A1",
+                bg = "#151515",
+            },
+            unfocused = {
+                fg = "#504945",
+                bg = "#151515"
+            },
+        },
+        current = {
+            focused = {
+                filename = "#A9B665",
+                bufnr = "#A9B665",
+            },
+            unfocused = {
+                filename = "#504945",
+                bufnr = "#504945",
+            }
+        },
+        secondary = {
+            focused = {
+                filename = "#A9B665",
+                bufnr = "#D8A657"
+            },
+            unfocused = {
+                filename = "#504945",
+                bufnr = "#504945",
+            },
+        },
+        ternary = {
+            focused = {
+                filename = "#8d965e",
+                bufnr = "#8d965e"
+            },
+            unfocused = {
+                filename = "#504945",
+                bufnr = "#504945",
+            },
+        },
+        primary = {
+            active = "#FFAF00",
+            inactive = "#504945",
+            unfocused = "#504945"
+        },
+        harpooned = {
+            unfocused = {
+                fg = "#5d6699",
+            }
+        },
+        both_way_arrow = {
+            focused = "#5F87AF",
+            unfocused = "#5F87AF"
+        },
+        cokeline = {
+            is_picking_close = "#a05959",
+            is_picking_focus = "#d7d7a5",
+            bg = {
+                detached = {
+                    focused = "#2B2A33",
+                    unfocused = "#020202",
+                },
+                attached = "#151515"
+            },
+            fg = {
+                focused = "#988E75",
+                unfocused = "#6c6c6c"
+            },
+        }
+    },
+    keymaps = {
+        -- Buffer lifecycle
+        reopen_last_closed = "<M-S-w>",
 
-		-- Core triquetra operations
-		toggle_secondary = "<M-f>", -- Current ↔ Secondary toggle
-		toggle_ternary = "<M-S-f>", -- Current ↔ Ternary toggle
-		jump_to_primary = "<M-;><M-f>", -- Bring primary to current
-		restore_ternary = "<M-;><M-r>", -- Restore ternary relationship
-		restore_secondary = "<M-;><M-t>", -- Restore secondary relationship
+        -- Core triquetra operations
+        toggle_secondary = "<M-f>", -- Current ↔ Secondary toggle
+        toggle_ternary = "<M-S-f>", -- Current ↔ Ternary toggle
+        jump_to_primary = "<M-;><M-f>", -- Bring primary to current
+        restore_ternary = "<M-;><M-r>", -- Restore ternary relationship
+        restore_secondary = "<M-;><M-t>", -- Restore secondary relationship
 
-		-- Window navigation
-		toggle_window = "<M-,>", -- Toggle between current and previous window
+        -- Window navigation
+        toggle_window = "<M-,>", -- Toggle between current and previous window
 
-		-- Cycling mode navigation
-		cycle_left = "<M-n>", -- During cycling mode
-		cycle_right = "<M-m>", -- During cycling mode
-		cycle_select = "<M-v>", -- Quit cycling mode and attach history with cycling buffer
+        -- Cycling mode navigation
+        cycle_left = "<M-n>", -- During cycling mode
+        cycle_right = "<M-m>", -- During cycling mode
+        cycle_select = "<M-v>", -- Quit cycling mode and attach history with cycling buffer
 
-		-- Primary buffer management
-		toggle_primary = "<M-;><M-c>", -- Toggle current buffer as primary
-		set_primary = "<M-;><M-x>",
-		close_buffer = "<M-.>",
-	},
-	cleanup_interval = 8000,    -- seconds
-	winbar_refresh_interval = 140 -- milliseconds
+        -- Primary buffer management
+        toggle_primary = "<M-;><M-c>", -- Toggle current buffer as primary
+        set_primary = "<M-;><M-x>",
+        close_buffer = "<M-.>",
+    },
+    cleanup_interval = 8000,    -- seconds
+    winbar_refresh_interval = 140 -- milliseconds
 }
 ```
 
@@ -317,8 +332,7 @@ Window-specific history is a recent addition and is really nice on seeing the bu
 
 ### Cycling
 
-`<m-n>` and `<m-m>` calls cokeline's cycle function and this makes the whole cavediver plugin be put into "cycling" mode. You will see the change of mode
- with the colors of the triquetra winbar and cokeline bufferline. 
+`<m-n>` and `<m-m>` calls cokeline's cycle function and this makes the whole cavediver plugin be put into "cycling" mode. You will see the change of mode with the colors of the triquetra winbar and cokeline bufferline. 
 
 You will notice that no matter how you cycle, the current slot buffer doesn't change. It is because during cycling mode, the cavediver plugin has stopped tracking visits. You need to do `<m-v>` to select the buffer you are currently and quit cycling mode. 
 
