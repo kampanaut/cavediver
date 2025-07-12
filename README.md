@@ -17,7 +17,7 @@ This is a **buffer relationship management system** that preserves your working 
 ## Demo
 
 <video width="800" controls autoplay muted loop>
-  <source src="demo.mp4" type="video/mp4">
+  <source src="https://github.com/user-attachments/assets/9c5c886e-fa63-404e-9038-f3d79012e9e8" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
