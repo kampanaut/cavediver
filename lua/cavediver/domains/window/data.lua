@@ -60,7 +60,7 @@ end
 ---@param old_hash Filehash The hash to be renamed
 ---@param new_hash Filehash The new hash to replace it with
 local function rename_hash_in_triquetras(old_hash, new_hash)
-    for winid, triquetra in pairs(crux) do
+    for _, triquetra in pairs(crux) do
         -- Update slots
         if triquetra.current_slot == old_hash then
             triquetra.current_slot = new_hash
@@ -81,12 +81,17 @@ local function rename_hash_in_triquetras(old_hash, new_hash)
             triquetra.displacement_ternary_map[old_hash] = nil
             triquetra.displacement_ternary_map[new_hash] = displaced_value
         end
+		if triquetra.displacement_ternary_map[old_hash.."-swap"] then
+            local displaced_value = triquetra.displacement_ternary_map[old_hash.."-swap"]
+            triquetra.displacement_ternary_map[old_hash.."-swap"] = nil
+            triquetra.displacement_ternary_map[new_hash.."-swap"] = displaced_value
+		end
         if triquetra.displacement_secondary_map[old_hash] then
             local displaced_value = triquetra.displacement_secondary_map[old_hash]
             triquetra.displacement_secondary_map[old_hash] = nil
             triquetra.displacement_secondary_map[new_hash] = displaced_value
         end
-        
+
         -- Update displacement maps (values)
         for hash, displaced_hash in pairs(triquetra.displacement_ternary_map) do
             if displaced_hash == old_hash then

@@ -40,7 +40,7 @@ function M.reconcile_triquetra(winid, new_bufnr)
 	if triquetra and triquetra.current_slot ~= new_filehash then
 		-- Reconcile the triquetra slots if we selected a buffer part of the relationship
 		if triquetra.ternary_slot == new_filehash then
-			triquetra.displacement_ternary_map[triquetra.current_slot] = triquetra.ternary_slot
+			triquetra.displacement_ternary_map[triquetra.current_slot.."-swap"] = triquetra.ternary_slot
 			temp = triquetra.current_slot
 			triquetra.current_slot = triquetra.ternary_slot
 			triquetra.ternary_slot = temp
@@ -59,7 +59,7 @@ function M.reconcile_triquetra(winid, new_bufnr)
 			if triquetra.displacement_ternary_map[triquetra.ternary_slot] == new_filehash then
 				triquetra.displacement_ternary_map[triquetra.ternary_slot] = triquetra.current_slot
 				vim.notify(
-					"Avoided conflict of ternary's remembered relationship becoming current. Remembered relationship has been changed to remember fleeting current buffer instead: ["
+					"Avoided conflict of ternary's remembered relationship becoming current. Remembered relationship has been changed to remember pre-jump current buffer instead: ["
 					.. (history.get_buffer_from_hash(triquetra.ternary_slot) or "")
 					.. "] -> ["
 					.. (history.get_buffer_from_hash(triquetra.current_slot) or "")
@@ -258,7 +258,7 @@ function M.swap_with_secondary(winid)
 		if triquetra.current_slot then
 			triquetra.displacement_secondary_map[triquetra.current_slot] = triquetra.secondary_slot
 			if triquetra.ternary_slot then
-				triquetra.displacement_ternary_map[triquetra.current_slot] = triquetra.ternary_slot
+				triquetra.displacement_ternary_map[triquetra.current_slot.."-swap"] = triquetra.ternary_slot
 			end
 		else
 			error("It's not okay to have a secondary slot without a current slot.")
@@ -404,7 +404,7 @@ function M.jump_to_primary(winid)
 		end
 	end
 	if triquetra.current_slot ~= triquetra.primary_buffer then -- We only do displacment if we are not already in the primary buffer.
-		triquetra.displacement_ternary_map[triquetra.current_slot] = triquetra.ternary_slot
+		triquetra.displacement_ternary_map[triquetra.current_slot.."-swap"] = triquetra.ternary_slot
 		triquetra.ternary_slot = triquetra.current_slot
 		triquetra.current_slot = triquetra.primary_buffer
 	else
@@ -461,7 +461,13 @@ end
 ---@param triquetra WindowTriquetra
 local function restore_from_displacement_map(type, triquetra)
 	local current_relationship = triquetra[type .. "_slot"]
-	local remembered_relationship = triquetra["displacement_" .. type .. "_map"][triquetra.current_slot]
+	local remembered_mapping = triquetra["displacement_" .. type .. "_map"]
+
+	local remembered_relationship = remembered_mapping[triquetra.current_slot.."-swap"]
+
+	if remembered_relationship == nil or remembered_relationship ~= triquetra.current_slot then
+		remembered_relationship = remembered_mapping[triquetra.current_slot]
+	end
 
 	if (remembered_relationship ~= nil) and (history.get_filepath_from_hash(remembered_relationship) ~= nil) and (remembered_relationship ~= current_relationship) then
 		if type == "ternary" then

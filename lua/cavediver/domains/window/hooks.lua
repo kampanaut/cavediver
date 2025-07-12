@@ -62,6 +62,22 @@ history.sm:on(history.states.ATTACHED, history.states.ATTACHED, "displacement_ma
 			if triquetra.ternary_slot and new_filehash ~= triquetra.ternary_slot then
 				triquetra.displacement_ternary_map[triquetra.current_slot] = triquetra.ternary_slot
 			end
+
+			if triquetra.current_slot == triquetra.displacement_ternary_map[new_filehash] then
+				if triquetra.ternary_slot == new_filehash then
+					vim.notify(
+						"The stored ternary of the new buffer is already the ternary, switching with the pre-jump stored ternary.",
+						vim.log.levels.WARN
+					)
+					triquetra.displacement_ternary_map[new_filehash] = triquetra.displacement_ternary_map[triquetra.current_slot]
+				else
+					vim.notify(
+						"The stored ternary of the new buffer is already the ternary, switching with the pre-jump ternary.",
+						vim.log.levels.WARN
+					)
+					triquetra.displacement_ternary_map[new_filehash] = triquetra.ternary_slot
+				end
+			end
 		end
 		-- so that we don't update with bad information. This is bad information, 
 		-- it doesn't provide anything outside the current ternary relationship.
