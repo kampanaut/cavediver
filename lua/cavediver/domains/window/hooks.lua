@@ -60,6 +60,7 @@ history.sm:on(history.states.ATTACHED, history.states.ATTACHED, "displacement_ma
 				error("Duplicates detected in current triquetra")
 			end
 			if triquetra.ternary_slot and new_filehash ~= triquetra.ternary_slot then
+				triquetra.displacement_ternary_map[triquetra.current_slot.."-swap"] = nil
 				triquetra.displacement_ternary_map[triquetra.current_slot] = triquetra.ternary_slot
 			end
 
