@@ -465,7 +465,7 @@ local function restore_from_displacement_map(type, triquetra)
 
 	local remembered_relationship = remembered_mapping[triquetra.current_slot.."-swap"]
 
-	if remembered_relationship == nil or remembered_relationship ~= triquetra.current_slot then
+	if remembered_relationship == nil or remembered_relationship == triquetra.ternary_slot then
 		remembered_relationship = remembered_mapping[triquetra.current_slot]
 	end
 
@@ -474,18 +474,18 @@ local function restore_from_displacement_map(type, triquetra)
 			if remembered_relationship == triquetra.secondary_slot then
 				triquetra.secondary_slot = triquetra.ternary_slot
 				triquetra.ternary_slot = remembered_relationship
-				vim.notify("Restored" .. type .. "slot to: " .. remembered_relationship, vim.log.levels.INFO)
 			else
 				triquetra.ternary_slot = remembered_relationship
 			end
+			vim.notify("Restored " .. type .. " slot to: " .. remembered_relationship, vim.log.levels.INFO)
 		elseif type == "secondary" then
 			if remembered_relationship == triquetra.ternary_slot then
 				triquetra.ternary_slot = triquetra.secondary_slot
 				triquetra.secondary_slot = remembered_relationship
-				vim.notify("Restored" .. type .. "slot to: " .. remembered_relationship, vim.log.levels.INFO)
 			else
 				triquetra.secondary_slot = remembered_relationship
 			end
+			vim.notify("Restored " .. type .. " slot to: " .. remembered_relationship, vim.log.levels.INFO)
 		end
 		triquetra["displacement_" .. type .. "_map"][triquetra.current_slot] = current_relationship
 	elseif (remembered_relationship == nil) then
