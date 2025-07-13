@@ -125,9 +125,7 @@ function M.cleanup_triquetras()
 						triquetra.ternary_slot = nil
 						bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 						resolved = history.routines.update_buffer_history(bufnr)
-						print("#1.1")
 						if not resolved then 
-							print("#1.2")
 							vim.cmd("bw! "..bufnr)
 						end
 					end
@@ -136,9 +134,7 @@ function M.cleanup_triquetras()
 						triquetra.secondary_slot = nil
 						bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 						resolved = history.routines.update_buffer_history(bufnr)
-						print("#2.1")
 						if not resolved then 
-							print("#2.2")
 							vim.cmd("bw! "..bufnr)
 						end
 					end
@@ -146,16 +142,14 @@ function M.cleanup_triquetras()
 						triquetra.current_slot = triquetra.primary_buffer
 						bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 						resolved = history.routines.update_buffer_history(bufnr)
-						print("#3.1")
 						if not resolved then 
-							print("#3.2")
 							vim.cmd("bw! "..bufnr)
 						end
 					end
-					history.routines.update_buffer_history_ordered()
-					history.routines.update_buffer_history_ordered_nonharpooned()
 
 					if resolved then -- I know this is fucking stupid, but I don't want to change the structure of this function.
+						history.routines.update_buffer_history_ordered()
+						history.routines.update_buffer_history_ordered_nonharpooned()
 						goto apply
 					end
 
@@ -572,7 +566,7 @@ function M.repopulate_window_relationships()
 	for _, winid in pairs(vim.api.nvim_list_wins()) do
 		local current_slot = history.get_hash_from_buffer(vim.api.nvim_win_get_buf(winid))
 		if current_slot == nil then
-			print("skipping window " .. winid .. " because it has no registered buffer.")
+			vim.notify("skipping window " .. winid .. " because it has no registered buffer.", vim.log.levels.INFO)
 			goto continue
 		end
 
