@@ -115,15 +115,52 @@ function M.cleanup_triquetras()
 				end
 				if cbufhash == triquetra.current_slot or vim.bo[cbufnr].buftype == "acwrite" then -- it means that the buffer didn't evolved to anything new. it was still deleted, so we fallback.
 					local candidate_bufnr
+
+					-- Part 1: Try Heal triquetra with self
+					---@type boolean If true then we skip to jumping to the resolved buffer.
+					local resolved = false
+					local bufnr
 					if triquetra.ternary_slot and history.get_buffer_from_hash(triquetra.ternary_slot) then
 						triquetra.current_slot = triquetra.ternary_slot
 						triquetra.ternary_slot = nil
-					elseif triquetra.secondary_slot and history.get_buffer_from_hash(triquetra.secondary_slot) then
+						bufnr = history.get_buffer_from_hash(triquetra.current_slot)
+						resolved = history.routines.update_buffer_history(bufnr)
+						print("#1.1")
+						if not resolved then 
+							print("#1.2")
+							vim.cmd("bw! "..bufnr)
+						end
+					end
+					if not resolved and triquetra.secondary_slot and history.get_buffer_from_hash(triquetra.secondary_slot) then
 						triquetra.current_slot = triquetra.secondary_slot
 						triquetra.secondary_slot = nil
-					elseif triquetra.primary_buffer and history.get_buffer_from_hash(triquetra.primary_buffer) then
+						bufnr = history.get_buffer_from_hash(triquetra.current_slot)
+						resolved = history.routines.update_buffer_history(bufnr)
+						print("#2.1")
+						if not resolved then 
+							print("#2.2")
+							vim.cmd("bw! "..bufnr)
+						end
+					end
+					if not resolved and triquetra.primary_buffer and history.get_buffer_from_hash(triquetra.primary_buffer) then
 						triquetra.current_slot = triquetra.primary_buffer
-					elseif history.get_filepath_from_hash(triquetra.current_slot) ~= nil then
+						bufnr = history.get_buffer_from_hash(triquetra.current_slot)
+						resolved = history.routines.update_buffer_history(bufnr)
+						print("#3.1")
+						if not resolved then 
+							print("#3.2")
+							vim.cmd("bw! "..bufnr)
+						end
+					end
+					history.routines.update_buffer_history_ordered()
+					history.routines.update_buffer_history_ordered_nonharpooned()
+
+					if resolved then -- I know this is fucking stupid, but I don't want to change the structure of this function.
+						goto apply
+					end
+
+					-- Part 2: This is when we can't heal it straightforward anymore.
+					if history.get_filepath_from_hash(triquetra.current_slot) ~= nil then
 						-- if it has a filepath mapping then it was registered before. If it was registered
 						-- before and we ended up at this point, it means that this buffer is stale. Something
 						-- must have went wrong. Otherwise, if it's not registered, i.e. empty filepath
@@ -166,11 +203,12 @@ function M.cleanup_triquetras()
 					if vim.bo[cbufnr].buftype == "acwrite" then -- we skip oil buffers, since they are not file buffers.
 						goto continue
 					end
+					::apply::
 					candidate_bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 					if candidate_bufnr then
 						vim.api.nvim_set_current_buf(candidate_bufnr)
 						vim.defer_fn(function()
-							if vim.api.nvim_buf_is_valid(cbufnr) then
+							if vim.api.nvim_buf_is_valid(cbufnr) and vim.api.nvim_buf_is_loaded(cbufnr) then
 								vim.cmd("bw! " .. cbufnr)
 							end
 						end, 100)
