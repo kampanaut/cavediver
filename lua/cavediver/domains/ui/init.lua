@@ -244,7 +244,7 @@ function M.bufferline.get_theme_fg_color(bufnr, is_focused)
 		error("This should not happen: No current triquetra found.")
 	end
 	if bufnr == ctriquetra.primary_bufnr then
-		return configs.colors.current.focused.bufnr
+		return configs.colors.primary.active
 	elseif bufnr == ctriquetra.secondary_bufnr then
 		return configs.colors.secondary.focused.bufnr
 	elseif bufnr == ctriquetra.current_bufnr then
