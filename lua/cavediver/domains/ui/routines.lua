@@ -494,6 +494,7 @@ function M.is_real_file(bufnr, win_id)
 		and not vim.tbl_contains(data.excluded_filetypes, filetype)
 		-- Allow no-name buffers for regular windows, exclude for popups
 		and (bufname ~= "" or win_config.relative == "")
+		and window.get_triquetra(win_id)
 
 	return value
 end
