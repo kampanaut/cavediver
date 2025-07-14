@@ -4,7 +4,7 @@
 
 This is a **navigation context manager system** that visualizes your working context during _convoluted development workflows_. Have you ever jumped so many times, jumping to definitions, across files, and then suddenly you just felt lost? Like you ask yourself, _how did I end up here?_ Well... this plugin **helps you visualize the current context of where are you at** and enables a way of **non-destructive exploration** so you can fearlessly navigate codebases while preserving your working context across sessions also.
 
-### Key Features
+### Functions
 
 - **Triquetra Buffer System**: Each window maintains current/secondary/ternary buffer relationships with a primary buffer
 - **Session Persistence**: Buffer relationships survive restarts through hash-based file identification  
@@ -13,6 +13,21 @@ This is a **navigation context manager system** that visualizes your working con
 - **Buffer Lifecycle**: Closed buffers reopen when accessed through relationships
 - **Visual Feedback**: Color-coded bufferline and winbar show buffer relationships
 - **Per-Window Tracking**: Independent buffer relationships for each window
+
+## Pending
+
+1. **Multi-version primary buffer**
+    You can backtrack now your previous primary buffer. Every time you set a new buffer as a primary, it is put in the first of a queue (primary_buffers). The first one is always the primary, the others are the "previous".
+    - You can now then manage it with a window pop-up, it is editable like that in harpoon window. 
+        - Delete-yank and then paste it in another place to reorder... 
+        - Or just delete, to really remove it.
+        - Type up a filereadable filepath and just save.
+            - The system validates if it is readable. If it is readable, it registers it.
+            - If not, then vim.notify() an error, nothing is saved.
+        - If you press enter while under a line (in normal mode), that line will be put on top which will be promoted as the current primary buffer.
+    - The default keybind `<m-;><m-f>` will now just always select the first element `primary_buffers[1]`
+    - If you disable primary buffer, you can still use the pop-up window to set a primary buffer from the queue, but `<m-;><m-f>` won't do anything at all, until you set it to active again..
+
 
 ## Demo
 
