@@ -14,7 +14,7 @@ This is a **navigation context manager system** that visualizes your working con
 - **Visual Feedback**: Color-coded bufferline and winbar show buffer relationships
 - **Per-Window Tracking**: Independent buffer relationships for each window
 
-## Pending
+## New Feature
 
 1. **Multi-version primary buffer**
     You can backtrack now your previous primary buffer. Every time you set a new buffer as a primary, it is put in the first of a queue (primary_buffers). The first one is always the primary, the others are the "previous".
@@ -27,6 +27,7 @@ This is a **navigation context manager system** that visualizes your working con
         - If you press enter while under a line (in normal mode), that line will be put on top which will be promoted as the current primary buffer.
     - The default keybind `<m-;><m-f>` will now just always select the first element `primary_buffers[1]`
     - If you disable primary buffer, you can still use the pop-up window to set a primary buffer from the queue, but `<m-;><m-f>` won't do anything at all, until you set it to active again..
+    - You can open the popup floating window with `<m-;>F`
 
 
 ## Demo
