@@ -358,23 +358,23 @@ local function construct_winbar_string(winid, theme)
 	end
 
 	if triquetra.has_primary then
-		if triquetra.primary_bufnr == triquetra.current_bufnr then
+		if triquetra.primary_display_name == triquetra.current_display_name then
 			theme.current_slot_bufnr = theme.primary_bufnr
 			fmt_cbufnr = "⦉%d⦊"
-		elseif triquetra.primary_bufnr == triquetra.secondary_bufnr then
+		elseif triquetra.primary_display_name == triquetra.secondary_display_name then
 			theme.secondary_slot_bufnr = theme.primary_bufnr
 			fmt_sbufnr = "⦉%d⦊"
-		elseif triquetra.primary_bufnr == triquetra.ternary_bufnr then
+		elseif triquetra.primary_display_name == triquetra.ternary_display_name then
 			theme.ternary_slot_bufnr = theme.primary_bufnr
 		end
 	else
-		if triquetra.primary_bufnr == triquetra.current_bufnr then
+		if triquetra.primary_display_name == triquetra.current_display_name then
 			fmt_cbufnr = "⦉%d⦊"
 			theme.current_slot_bufnr = "WinbarBufnrPrimaryDisabled"
-		elseif triquetra.primary_bufnr == triquetra.secondary_bufnr then
+		elseif triquetra.primary_display_name == triquetra.secondary_display_name then
 			theme.secondary_slot_bufnr = "WinbarBufnrPrimaryDisabled"
 			fmt_sbufnr = "⦉%d⦊"
-		elseif triquetra.primary_bufnr == triquetra.ternary_bufnr then
+		elseif triquetra.primary_display_name == triquetra.ternary_display_name then
 			theme.ternary_slot_bufnr = "WinbarBufnrPrimaryDisabled"
 		end
 	end
