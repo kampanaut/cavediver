@@ -91,9 +91,8 @@ function M.cleanup_triquetras()
 					triquetra.secondary_slot = nil
 				elseif triquetra.current_slot == triquetra.ternary_slot then
 					triquetra.ternary_slot = nil
-				end
-				if triquetra.current_slot == triquetra.primary_buffer then
-					triquetra.primary_buffer = nil
+				elseif vim.fn.index(triquetra.primary_buffer, triquetra.current_slot) ~= -1 then
+					table.remove(triquetra.primary_buffer, vim.fn.index(triquetra.primary_buffer, triquetra.current_slot) + 1)
 				end
 			else
 				-- yes if the noname buffer turns evolved into a terminal, we don't want to track it.
@@ -125,7 +124,7 @@ function M.cleanup_triquetras()
 						triquetra.ternary_slot = nil
 						bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 						resolved = history.routines.update_buffer_history(bufnr)
-						if not resolved then 
+						if not resolved then
 							vim.cmd("bw! "..bufnr)
 						end
 					end
@@ -134,15 +133,15 @@ function M.cleanup_triquetras()
 						triquetra.secondary_slot = nil
 						bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 						resolved = history.routines.update_buffer_history(bufnr)
-						if not resolved then 
+						if not resolved then
 							vim.cmd("bw! "..bufnr)
 						end
 					end
-					if not resolved and triquetra.primary_buffer and history.get_buffer_from_hash(triquetra.primary_buffer) then
-						triquetra.current_slot = triquetra.primary_buffer
+					if not resolved and triquetra.primary_buffer[1] and history.get_buffer_from_hash(triquetra.primary_buffer[1]) then
+						triquetra.current_slot = triquetra.primary_buffer[1]
 						bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 						resolved = history.routines.update_buffer_history(bufnr)
-						if not resolved then 
+						if not resolved then
 							vim.cmd("bw! "..bufnr)
 						end
 					end
@@ -235,13 +234,18 @@ function M.cleanup_triquetras()
 			triquetra.ternary_slot = nil
 		end
 
-		filepath = history.get_filepath_from_hash(triquetra.primary_buffer)
-		if filepath then
-			if not filepath:match("^NONAME_") and vim.fn.filereadable(filepath) == 0 then
-				triquetra.primary_buffer = nil
+		local pfilehash
+		for index = #(triquetra.primary_buffer or {}), 1, -1 do
+			pfilehash = triquetra.primary_buffer[index]
+			filepath = history.get_filepath_from_hash(pfilehash)
+
+			if filepath then
+				if not filepath:match("^NONAME_") and vim.fn.filereadable(filepath) == 0 then
+					table.remove(triquetra.primary_buffer, index)
+				end
+			else
+				table.remove(triquetra.primary_buffer, index)
 			end
-		else
-			triquetra.primary_buffer = nil
 		end
 		set_cache_from_window_triquetra(winid)
 		::continue::
@@ -421,24 +425,24 @@ function M.jump_to_primary(winid)
 			vim.log.levels.INFO)
 		return
 	end
-	if (triquetra.primary_buffer == nil) or (not triquetra.primary_enabled) or triquetra.secondary_slot == triquetra.primary_buffer then
+	if (triquetra.primary_buffer[1] == nil) or (not triquetra.primary_enabled) or triquetra.secondary_slot == triquetra.primary_buffer[1] then
 		M.swap_with_secondary(winid)
 		return
 	end
 
-	local cbufnr = history.get_buffer_from_hash(triquetra.primary_buffer)
+	local cbufnr = history.get_buffer_from_hash(triquetra.primary_buffer[1])
 	if cbufnr == nil then
-		cbufnr = history.reopen_filehash(triquetra.primary_buffer)
+		cbufnr = history.reopen_filehash(triquetra.primary_buffer[1])
 		if cbufnr == nil then
-			error("Primary buffer not found in filesystem: " .. history.get_filepath_from_hash(triquetra.primary_buffer))
+			error("Primary buffer not found in filesystem: " .. history.get_filepath_from_hash(triquetra.primary_buffer[1]))
 		else
-			remove_from_closed_buffers(triquetra.primary_buffer)
+			remove_from_closed_buffers(triquetra.primary_buffer[1])
 		end
 	end
-	if triquetra.current_slot ~= triquetra.primary_buffer then -- We only do displacment if we are not already in the primary buffer.
+	if triquetra.current_slot ~= triquetra.primary_buffer[1] then -- We only do displacment if we are not already in the primary buffer.
 		triquetra.displacement_ternary_map[triquetra.current_slot.."-swap"] = triquetra.ternary_slot
 		triquetra.ternary_slot = triquetra.current_slot
-		triquetra.current_slot = triquetra.primary_buffer
+		triquetra.current_slot = triquetra.primary_buffer[1]
 	else
 		vim.notify("Already in primary buffer, no displacement performed.", vim.log.levels.INFO)
 	end
@@ -458,8 +462,8 @@ function M.toggle_primary_buffer(winid)
 		return
 	end
 
-	if triquetra.primary_buffer == nil then
-		triquetra.primary_buffer = triquetra.current_slot
+	if #triquetra.primary_buffer == 0 then
+		triquetra.primary_buffer[1] = triquetra.current_slot
 	end
 	triquetra.primary_enabled = not triquetra.primary_enabled
 	loop_sm:to(loop_states.SELF)
@@ -476,10 +480,14 @@ function M.set_primary_buffer(winid)
 		return
 	end
 
-	if triquetra.primary_buffer == nil then
-		triquetra.primary_buffer = triquetra.current_slot
-	elseif triquetra.primary_buffer ~= triquetra.current_slot then
-		triquetra.primary_buffer = triquetra.current_slot
+	if triquetra.primary_buffer[1] == nil then
+		triquetra.primary_buffer[1] = triquetra.current_slot
+	elseif triquetra.primary_buffer[1] ~= triquetra.current_slot then
+		local existing_index = vim.fn.index(triquetra.primary_buffer, triquetra.current_slot)
+		if existing_index ~= -1 then
+			table.remove(triquetra.primary_buffer, existing_index + 1)
+		end
+		table.insert(triquetra.primary_buffer, 1, triquetra.current_slot)
 		triquetra.primary_enabled = true
 	else
 		triquetra.primary_enabled = not triquetra.primary_enabled
@@ -574,7 +582,7 @@ function M.repopulate_window_relationships()
 			current_slot = current_slot,
 			secondary_slot = nil,
 			ternary_slot = nil,
-			primary_buffer = nil,
+			primary_buffer = {},
 			displacement_secondary_map = {},
 			displacement_ternary_map = {},
 			primary_enabled = false,

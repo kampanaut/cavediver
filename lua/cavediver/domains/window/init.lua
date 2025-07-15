@@ -62,7 +62,7 @@ function M.set_buffer_relationship(winid, relationship_table)
 		primary_buffer = relationship_table.primary_buffer,
 		displacement_secondary_map = relationship_table.displacement_secondary_map,
 		displacement_ternary_map = relationship_table.displacement_ternary_map,
-		primary_enabled = relationship_table.primary_buffer ~= nil
+		primary_enabled = relationship_table.primary_buffer[1] ~= nil
     }
 
 	-- print_table(data.crux)

@@ -9,7 +9,7 @@
 ---@field current_slot Filehash The current slot filename. Whatever is currently shown in the window.
 ---@field secondary_slot Filehash|nil User-controlled "waiting" slot, user can store what buffer is in the secondary slot.
 ---@field ternary_slot Filehash|nil Auto-populated waiting slot, the "previous" current.
----@field primary_buffer Filehash|nil The file buffer which can take its place in one of the three at a time.
+---@field primary_buffer Filehash[]|nil The file buffer which can take its place in one of the three at a time.
 ---@field primary_enabled boolean Whether the primary buffer is enabled in this triquetra.
 ---@field displacement_ternary_map table<Filehash, Filehash> -- This is filename's ternary before it got displaced.
 ---@field displacement_secondary_map table<Filehash, Filehash> -- This is filename's secondary before it got displaced.
@@ -30,7 +30,7 @@ local function create_empty_window_buffer_relationship(winid)
 		current_slot = current_slot,
 		secondary_slot = nil,
 		ternary_slot = nil,
-		primary_buffer = nil,
+		primary_buffer = {},
 		displacement_ternary_map = {},
 		displacement_secondary_map = {},
 		primary_enabled = false,
@@ -71,8 +71,10 @@ local function rename_hash_in_triquetras(old_hash, new_hash)
         if triquetra.ternary_slot == old_hash then
             triquetra.ternary_slot = new_hash
         end
-        if triquetra.primary_buffer == old_hash then
-            triquetra.primary_buffer = new_hash
+
+		local index = vim.fn.index(triquetra.primary_buffer, old_hash) + 1
+        if index ~= 0 then
+            triquetra.primary_buffer[index] = new_hash
         end
         
         -- Update displacement maps (keys)

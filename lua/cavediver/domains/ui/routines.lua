@@ -164,7 +164,7 @@ local function derive_cache_from_window_triquetra(winid)
 		ui_triquetra.current_bufnr, ui_triquetra.current_display_name, _, _, _ =
 			resolve_slot(window_triquetra.current_slot)
 		ui_triquetra.primary_bufnr, ui_triquetra.primary_display_name, ui_triquetra.has_primary, _, _ =
-			resolve_slot(window_triquetra.primary_buffer)
+			resolve_slot(window_triquetra.primary_buffer[1])
 		ui_triquetra.secondary_bufnr, ui_triquetra.secondary_display_name, ui_triquetra.has_secondary, ui_triquetra.loaded_slots.secondary, ui_triquetra.deleted_slots.secondary =
 			resolve_slot(window_triquetra.secondary_slot)
 		ui_triquetra.ternary_bufnr, ui_triquetra.ternary_display_name, ui_triquetra.has_ternary, ui_triquetra.loaded_slots.ternary, ui_triquetra.deleted_slots.ternary =

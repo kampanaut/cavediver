@@ -671,7 +671,7 @@ function M.cleanup_system()
 	local window = require('cavediver.domains.window')
 	for winid, triquetra in pairs(window.data.crux) do
 		local slots_to_check = { triquetra.current_slot, triquetra.secondary_slot, triquetra.ternary_slot, triquetra
-			.primary_buffer }
+			.primary_buffer[1] }
 		for _, slot in ipairs(slots_to_check) do
 			if slot and not data.hash_filepath_registry.filepaths[slot] then
 				-- Triquetra references invalid filehash

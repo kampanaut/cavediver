@@ -217,7 +217,11 @@ local function load_window_buffer_relationships(window_buffer, cwd)
 			goto continue
 		end
 
-		local cfilehash, sfilehash, pfilehash, tfilehash
+		---@type Filehash|nil
+		local cfilehash, sfilehash, tfilehash
+
+		---@type Filehash[]|nil
+		local pfilehashes
 
 		-- print_table(history.data)
 		-- Current buffer [1] - try to restore or use window's current buffer
@@ -225,6 +229,9 @@ local function load_window_buffer_relationships(window_buffer, cwd)
 			local current_filepath = unobfuscate_filehash_if_needed(triquetra_serialised[1], cwd)
 			history.register_filepath(current_filepath)
 			cfilehash = history.get_hash_from_filepath(current_filepath)
+			if cfilehash == nil then
+				error("State Corruption: Cannot load window buffer relationship: The window has an unregistered buffer.")
+			end
 			if current_filepath:match("^NONAME_") then
 				-- [No Name] buffer - try to restore from content
 				local saved_hash = history.get_hash_from_filepath(current_filepath)
@@ -248,9 +255,9 @@ local function load_window_buffer_relationships(window_buffer, cwd)
 			sfilehash = history.get_hash_from_filepath(unobfuscate_filehash_if_needed(triquetra_serialised[2], cwd))
 		end
 
-		-- Primary buffer [3]
+		-- Primary buffer [3] - an array
 		if triquetra_serialised[3] ~= vim.NIL then
-			pfilehash = history.get_hash_from_filepath(unobfuscate_filehash_if_needed(triquetra_serialised[3], cwd))
+			pfilehashes = vim.tbl_map(function (hash) return unobfuscate_filehash_if_needed(hash, cwd) end, triquetra_serialised[3])
 		end
 
 		-- Ternary slot [4]
@@ -276,10 +283,10 @@ local function load_window_buffer_relationships(window_buffer, cwd)
 				current_slot = current_slot,
 				secondary_slot = sfilehash,
 				ternary_slot = tfilehash,
-				primary_buffer = pfilehash,
+				primary_buffer = pfilehashes,
 				displacement_ternary_map = {},
 				displacement_secondary_map = {},
-				primary_enabled = pfilehash and true or false
+				primary_enabled = (pfilehashes and #pfilehashes and true) or false
 			}
 		)
 		set_cache_from_window_triquetra(actual_winid)
@@ -383,71 +390,71 @@ local function serialise_window_relationships(cwd)
 				goto continue
 			end
 
-			local cfilename, sfilename, pfilename, tfilename
+			local cfilehash, sfilehash, pfilehashes, tfilehash
 
 			if not triquetra then
 				error("This is impossible. The window triquetra must exist.")
 			end
 
 			-- Current buffer (window's active buffer)
-			cfilename = triquetra.current_slot
-			sfilename = triquetra.secondary_slot
-			pfilename = triquetra.primary_buffer
-			tfilename = triquetra.ternary_slot
+			cfilehash = triquetra.current_slot
+			sfilehash = triquetra.secondary_slot
+			pfilehashes = triquetra.primary_buffer
+			tfilehash = triquetra.ternary_slot
 
-			local cfilepath = history.get_filepath_from_hash(cfilename)
+			local cfilepath = history.get_filepath_from_hash(cfilehash)
 
 			if
 				cfilepath and
 				cfilepath:match("^NONAME_") and
-				not vim.tbl_contains(history.data.closed_buffers, cfilename)
+				not vim.tbl_contains(history.data.closed_buffers, cfilehash)
 			then
-				if pfilename ~= nil then
-					cfilename = pfilename
-					pfilename = nil
-				elseif tfilename ~= nil then
-					cfilename = tfilename
-					tfilename = nil
-				elseif sfilename ~= nil then
-					cfilename = sfilename
-					sfilename = nil
+				if pfilehashes ~= nil and #pfilehashes > 0 then
+					cfilehash = pfilehashes[1]
+					pfilehashes = nil
+				elseif tfilehash ~= nil then
+					cfilehash = tfilehash
+					tfilehash = nil
+				elseif sfilehash ~= nil then
+					cfilehash = sfilehash
+					sfilehash = nil
 				else
-					cfilename = "FUCKING BAD"
+					cfilehash = "FUCKING BAD"
 				end
 			end
 
-			if cfilename == nil then
-				cfilename = vim.NIL
+			if cfilehash == nil then
+				cfilehash = vim.NIL
 			else
-				cfilename = obfuscate_filehash_if_needed(cfilename, cwd) or vim.NIL
+				cfilehash = obfuscate_filehash_if_needed(cfilehash, cwd) or vim.NIL
 			end
 
 			-- Secondary slot
-			if sfilename == nil then
-				sfilename = vim.NIL
+			if sfilehash == nil then
+				sfilehash = vim.NIL
 			else
-				sfilename = obfuscate_filehash_if_needed(sfilename, cwd) or vim.NIL
+				sfilehash = obfuscate_filehash_if_needed(sfilehash, cwd) or vim.NIL
 			end
 
 			-- Primary buffer (mobile)
-			if pfilename == nil then
-				pfilename = vim.NIL
+			if pfilehashes == nil then
+				pfilehashes = vim.NIL
 			else
-				pfilename = obfuscate_filehash_if_needed(pfilename, cwd) or vim.NIL
+				pfilehashes = vim.tbl_map(function(hash) return obfuscate_filehash_if_needed(hash, cwd) end, pfilehashes)
 			end
 
 			-- Ternary slot
-			if tfilename == nil then
-				tfilename = vim.NIL
+			if tfilehash == nil then
+				tfilehash = vim.NIL
 			else
-				tfilename = obfuscate_filehash_if_needed(tfilename, cwd) or vim.NIL
+				tfilehash = obfuscate_filehash_if_needed(tfilehash, cwd) or vim.NIL
 			end
 
 			compressed[compressed_index] = {
-				[1] = cfilename, -- Current buffer
-				[2] = sfilename, -- Secondary slot
-				[3] = pfilename, -- Primary buffer
-				[4] = tfilename -- Ternary slot
+				[1] = cfilehash, -- Current buffer
+				[2] = sfilehash, -- Secondary slot
+				[3] = pfilehashes, -- Primary buffer
+				[4] = tfilehash -- Ternary slot
 			}
 			compressed_index = compressed_index + 1
 			::continue::
