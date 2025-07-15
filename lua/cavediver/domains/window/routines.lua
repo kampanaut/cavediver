@@ -12,6 +12,59 @@ local loop_states = require('cavediver.domains.ui.states').LOOP
 
 local M = {}
 
+---This will take in FILEPATHS and validates the input FILEPATHS, to be put as the 
+---new primary buffers history for the triquetra.
+---
+---@param primary_filepaths Filepath[] The filepaths to update in the primary buffer
+---@param winid WinId The window ID to update the primary buffer for
+---@return nil
+function M.update_primary_buffer(primary_filepaths, winid)
+	local triquetra = data.get_window_triquetra(winid)
+
+	if not triquetra then
+		error("No triquetra found for window " .. winid)
+	end
+
+	local error_lines = {}
+	local valid_filepaths = {}
+	for _, filepath in ipairs(primary_filepaths) do
+		local fbufnr = vim.fn.bufnr(filepath)
+		if (vim.fn.filereadable(filepath) == 0) and (not filepath:match("^NONAME_")) then -- If it's a file that doesn't exist in the filesystem.
+			table.insert(error_lines, "- File does not exist: " .. filepath)
+			goto continue
+		elseif fbufnr ~= -1 and history.get_hash_from_buffer(fbufnr) == nil then -- THE USER CANNOT REGISTER A BUFFER EXPLICITLY. IT IS DONE AUTOMATICALLY. SO we throw error instead of automatically registering it.
+			-- history.register_buffer(fbufnr)
+			table.insert(error_lines, "- You cannot set the file buffer [" .. filepath .. "] that isn't tracked by cavediver to be a primary buffer.")
+			goto continue
+		elseif fbufnr == -1 and history.get_hash_from_filepath(filepath) == nil then -- If the filepath is not loaded by neovim and is not registered then register it.
+			if filepath:match("^NONAME_") then -- If the buffer_from_filepath query turned out to be nil and the filepath was just for NO NAME buffer then that means this NO_NAME buffer you have never existed, since the registry says so.
+				table.insert(error_lines, " - [" .. filepath .. "] is not a registered no name buffer. You can only add registered no name buffers to the primary buffer.")
+				goto continue
+			else
+				history.register_filepath(filepath)
+			end
+		end
+		table.insert(valid_filepaths, filepath)
+		::continue::
+	end
+
+	if #error_lines > 0 then
+		vim.notify(
+			"Error updating primary buffer for window " .. winid .. ":\n" .. table.concat(error_lines, "\n"),
+			vim.log.levels.ERROR
+		)
+	end
+
+	if #valid_filepaths > 0 then 
+		triquetra.primary_buffer = vim.tbl_map(history.get_hash_from_filepath, valid_filepaths)
+		triquetra.primary_enabled = true
+	else
+		triquetra.primary_enabled = false
+	end
+
+	loop_sm:to(loop_states.SELF)
+end
+
 ---Remove buffer from closed buffers list by filehash.
 ---@param filehash Filehash The filehash to remove from closed buffers
 local function remove_from_closed_buffers(filehash)
@@ -433,6 +486,10 @@ function M.jump_to_primary(winid)
 	local cbufnr = history.get_buffer_from_hash(triquetra.primary_buffer[1])
 	if cbufnr == nil then
 		cbufnr = history.reopen_filehash(triquetra.primary_buffer[1])
+		if cbufnr and history.get_filepath_from_buffer(cbufnr):match("^NONAME_") then
+			table.remove(triquetra.primary_buffer, 1)
+			table.insert(triquetra.primary_buffer, 1, history.get_hash_from_buffer(cbufnr))
+		end
 		if cbufnr == nil then
 			error("Primary buffer not found in filesystem: " .. history.get_filepath_from_hash(triquetra.primary_buffer[1]))
 		else
@@ -467,6 +524,7 @@ function M.toggle_primary_buffer(winid)
 	end
 	triquetra.primary_enabled = not triquetra.primary_enabled
 	loop_sm:to(loop_states.SELF)
+	vim.cmd("redraw!")
 end
 
 ---Overwrite the primary buffer in the target window with the current slot.
@@ -482,6 +540,7 @@ function M.set_primary_buffer(winid)
 
 	if triquetra.primary_buffer[1] == nil then
 		triquetra.primary_buffer[1] = triquetra.current_slot
+		triquetra.primary_enabled = true
 	elseif triquetra.primary_buffer[1] ~= triquetra.current_slot then
 		local existing_index = vim.fn.index(triquetra.primary_buffer, triquetra.current_slot)
 		if existing_index ~= -1 then
@@ -493,6 +552,7 @@ function M.set_primary_buffer(winid)
 		triquetra.primary_enabled = not triquetra.primary_enabled
 	end
 	loop_sm:to(loop_states.SELF)
+	vim.cmd("redraw!")
 end
 
 ---A general function to restore from a displacement map.

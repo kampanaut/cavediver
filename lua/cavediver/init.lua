@@ -110,6 +110,12 @@ local function setup_keymaps(keymaps)
 			M.delete_buffer()
 		end, { desc = "Toggle current buffer as primary" })
 	end
+
+	if keymaps.open_primary_buffer_history then
+		vim.keymap.set('n', keymaps.open_primary_buffer_history, function()
+			M.open_primary_buffer_history()
+		end, { desc = "Toggle current buffer as primary" })
+	end
 end
 
 ---Initialize cavediver plugin with configuration
@@ -391,6 +397,8 @@ M.cycle_right = navigation.cycle_right
 
 M.toggle_window = navigation.toggle_window
 M.cycle_select = navigation.select_buffer
+
+M.open_primary_buffer_history = ui.routines.show_primary_buffer_history
 
 -- Primary buffer management (to be implemented in window domain)
 M.toggle_primary = function()

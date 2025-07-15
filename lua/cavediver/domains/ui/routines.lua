@@ -17,6 +17,79 @@ local update_timer = vim.loop:new_timer()
 
 local M = {}
 
+---Display primary buffer history managgement floating window.
+function M.show_primary_buffer_history()
+	local cwin = vim.api.nvim_get_current_win()
+
+	local triquetra = window.get_triquetra(cwin)
+
+	if not triquetra then
+		vim.notify("No triquetra found for current window.", vim.log.levels.INFO)
+		return
+	end
+
+	local dbuf = vim.api.nvim_create_buf(true, false)
+	local dwin
+
+	vim.bo[dbuf].filetype = "cavediver-primary-buffer-history"
+	vim.bo[dbuf].buftype = "acwrite"
+	vim.bo[dbuf].swapfile = false
+
+	vim.api.nvim_buf_set_name(dbuf, "cavediver://primary-buffer-queue-history")
+	vim.api.nvim_buf_set_lines(dbuf, 0, -1, false, vim.tbl_map(history.get_filepath_from_hash, triquetra.primary_buffer))
+
+	vim.api.nvim_create_autocmd("BufDelete", {
+		buffer = dbuf,
+		once = true,
+		callback = function()
+			vim.defer_fn(function()
+					if vim.api.nvim_win_is_valid(dwin) then
+						vim.api.nvim_win_close(dwin, true)
+					end
+				end,
+			800)
+		end
+	})
+
+	vim.api.nvim_create_autocmd("BufWriteCmd", {
+		buffer = dbuf,
+		callback = function()
+			local lines = vim.api.nvim_buf_get_lines(dbuf, 0, -1, false)
+			lines = vim.tbl_map(function(line)
+				return vim.trim(line)
+			end, lines)
+			window.update_primary_buffer(lines, cwin)
+			vim.api.nvim_buf_set_lines(dbuf, 0, -1, false,
+				vim.tbl_map(history.get_filepath_from_hash, triquetra.primary_buffer))
+			vim.bo[dbuf].modified = false
+			vim.cmd("redraw")
+		end,
+		desc = "Save primary buffer queue changes"
+	})
+
+	local width = math.min(80, math.floor(vim.o.columns * 0.8))
+	local height = math.min(20, math.floor(vim.o.lines * 0.8))
+
+	dwin = vim.api.nvim_open_win(dbuf, true, {
+		relative = "editor",
+		width = width,
+		height = height,
+		col = math.floor((vim.o.columns - width) / 2),
+		row = math.floor((vim.o.lines - height) / 2),
+		style = "minimal",
+		border = "rounded",
+		title = " Primary Buffer Queue (History)",
+		title_pos = "center",
+	})
+
+	vim.b[dbuf].display_window = dwin
+
+	vim.wo[dwin].wrap = false
+	vim.wo[dwin].cursorline = true
+	vim.wo[dwin].number = true
+	vim.wo[dwin].relativenumber = false
+end
+
 ---Find buffers with conflicting basenames.
 ---
 ---@param basename string The basename to check for conflicts
@@ -333,8 +406,10 @@ local function construct_winbar_string(winid, theme)
 		local debug_info = {
 			winid = winid,
 			current_slot = window_triquetra and window_triquetra.current_slot or "nil",
-			filepath_exists = window_triquetra and window_triquetra.current_slot and history.get_filepath_from_hash(window_triquetra.current_slot) or "lookup_failed",
-			buffer_exists = window_triquetra and window_triquetra.current_slot and history.get_buffer_from_hash(window_triquetra.current_slot) or "lookup_failed",
+			filepath_exists = window_triquetra and window_triquetra.current_slot and
+				history.get_filepath_from_hash(window_triquetra.current_slot) or "lookup_failed",
+			buffer_exists = window_triquetra and window_triquetra.current_slot and
+				history.get_buffer_from_hash(window_triquetra.current_slot) or "lookup_failed",
 			actual_winbuf = vim.api.nvim_win_get_buf(winid)
 		}
 		vim.notify("WINBAR STATE CORRUPTION: current_bufnr is nil | " .. vim.inspect(debug_info), vim.log.levels.ERROR)

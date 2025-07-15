@@ -221,7 +221,7 @@ local function load_window_buffer_relationships(window_buffer, cwd)
 		local cfilehash, sfilehash, tfilehash
 
 		---@type Filehash[]|nil
-		local pfilehashes
+		local pfilehashes = {}
 
 		-- print_table(history.data)
 		-- Current buffer [1] - try to restore or use window's current buffer
@@ -256,8 +256,8 @@ local function load_window_buffer_relationships(window_buffer, cwd)
 		end
 
 		-- Primary buffer [3] - an array
-		if triquetra_serialised[3] ~= vim.NIL then
-			pfilehashes = vim.tbl_map(function (hash) return unobfuscate_filehash_if_needed(hash, cwd) end, triquetra_serialised[3])
+		if #triquetra_serialised[3] > 0 then
+			pfilehashes = vim.tbl_map(function (hash) return history.get_hash_from_filepath(unobfuscate_filehash_if_needed(hash, cwd)) end, triquetra_serialised[3]) or {}
 		end
 
 		-- Ternary slot [4]

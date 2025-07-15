@@ -12,6 +12,7 @@
 ---@field set_primary string Set current buffer as primary
 ---@field close_buffer string Unregister and delete current buffer
 ---@field toggle_window string Jump between previous windows
+---@field open_primary_buffer_history string Open primary buffer history window
 
 
 ---Default configuration
@@ -112,9 +113,11 @@ local defaults = {
 		cycle_select = "<M-v>", -- Quit cycling mode and attach history with cycling buffer
 
 		-- Primary buffer management
-		toggle_primary = "<M-;><M-c>", -- Toggle current buffer as primary
-		set_primary = "<M-;><M-x>",
+		toggle_primary = "<M-;><M-x>", -- Toggle current buffer as primary
+		set_primary = "<M-;><M-c>",
 		close_buffer = "<M-.>",
+
+		open_primary_buffer_history = "<M-;>F", -- Open primary buffer history
 	},
 	cleanup_interval = 8000,    -- seconds
 	winbar_refresh_interval = 140 -- milliseconds

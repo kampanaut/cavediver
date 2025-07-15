@@ -84,6 +84,7 @@ M.toggle_primary_buffer = routines.toggle_primary_buffer
 M.set_primary_buffer = routines.set_primary_buffer
 M.restore_triquetra_secondary = routines.restore_triquetra_secondary
 M.restore_triquetra_ternary = routines.restore_triquetra_ternary
+M.update_primary_buffer = routines.update_primary_buffer
 
 M.reconcile_triquetra = routines.reconcile_triquetra
 
