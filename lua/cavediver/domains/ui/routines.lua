@@ -25,8 +25,9 @@ function M.show_primary_buffer_history()
 
 	local basename_filepath_mapping = {}
 	
-	for filehash, basename in pairs(data.display_name_cache) do
-		local filepath = history.get_filepath_from_hash(filehash)
+	for filepath, filehash in pairs(history.data.hash_filepath_registry.hashes) do
+		data.clear_display_name_cache()
+		local basename = M.get_smart_basename(filehash) -- Ensure cache is populated
 		if filepath then
 			if filepath:match("^NONAME_") then
 				basename_filepath_mapping[filepath] = filepath
@@ -360,7 +361,7 @@ function M.refresh_ui(cwin)
 	cache.history_detached = history.is_detached()
 
 	-- Update current window triquetra display cache
-	cache.current_window_triquetra = derive_cache_from_window_triquetra(cwin)
+	cache.current_window_triquetra = derive_cache_from_window_triquetra(cwin) or cache.current_window_triquetra
 
 	cache.initialized = true
 end

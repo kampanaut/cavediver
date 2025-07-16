@@ -36,7 +36,7 @@ end, 3, true, history.states.mode.UPDATE)
 
 navigation.sm:on("*", "*", "winenter_update_ui", function(context)
 	uiMachines.loop:to(states.LOOP.SELF)
-end, 2, true, navigation.states.mode.WINENTER)
+end, 4, true, navigation.states.mode.WINENTER)
 
 
 -- Clear display name cache on buffer changes for accurate basename display

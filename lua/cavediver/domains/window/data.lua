@@ -43,7 +43,8 @@ end
 ---@return WindowTriquetra|nil relationship The window's buffer relationships
 local function get_window_relationships(winid)
     if not crux[winid] then
-		if require('cavediver.domains.history').get_hash_from_buffer(vim.api.nvim_get_current_buf()) then 
+		local config = vim.api.nvim_win_get_config(winid)
+		if config.relative == "" and require('cavediver.domains.history').get_hash_from_buffer(vim.api.nvim_get_current_buf()) then 
 			-- print("Made triquetra for window " .. winid)
 			create_empty_window_buffer_relationship(winid)
 		else
