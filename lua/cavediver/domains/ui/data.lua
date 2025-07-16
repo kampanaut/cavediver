@@ -142,6 +142,7 @@ local excluded_filetypes = {
 }
 
 -- Simple basename display cache - cleared on buffer changes
+---@type table<Filehash, Filepath>
 local display_name_cache = {}
 
 ---Reset bufferline cache to empty state.

@@ -22,6 +22,10 @@ local defaults = {
 	bufferline = {
 		history_view = "global" -- "global" | "window"
 	},
+	primary_buffer_history_popup = {
+		height = 0.2, -- can be a ratio or a whole number
+		width = 0.7, -- can be a ratio or a whole number
+	},
 	colors = {
 		base = {
 			focused = {

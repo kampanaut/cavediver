@@ -64,6 +64,7 @@ function M.show_primary_buffer_history()
 
 	vim.api.nvim_buf_set_name(dbuf, "cavediver://primary-buffer-queue-history")
 	vim.api.nvim_buf_set_lines(dbuf, 0, -1, false, vim.tbl_map(to_display, triquetra.primary_buffer))
+	vim.bo[dbuf].modified = false
 
 	vim.api.nvim_create_autocmd("BufDelete", {
 		buffer = dbuf,
@@ -81,6 +82,9 @@ function M.show_primary_buffer_history()
 	vim.api.nvim_create_autocmd("BufWriteCmd", {
 		buffer = dbuf,
 		callback = function()
+			if not vim.bo[dbuf].modified then
+				return
+			end
 			local lines = vim.api.nvim_buf_get_lines(dbuf, 0, -1, false)
 			lines = vim.tbl_map(function(basename)
 				basename = vim.trim(basename)
@@ -95,8 +99,21 @@ function M.show_primary_buffer_history()
 		desc = "Save primary buffer queue changes"
 	})
 
-	local width = math.min(80, math.floor(vim.o.columns * 0.8))
-	local height = math.min(20, math.floor(vim.o.lines * 0.8))
+	local configs = require('cavediver.configs')
+	local width, height
+	configs.primary_buffer_history_popup.width = math.abs(configs.primary_buffer_history_popup.width)
+	configs.primary_buffer_history_popup.height = math.abs(configs.primary_buffer_history_popup.height)
+
+	if configs.primary_buffer_history_popup.width <= 1 then
+		width = math.floor(vim.o.columns * configs.primary_buffer_history_popup.width)
+	else
+		width = math.min(vim.o.columns, math.floor(configs.primary_buffer_history_popup.width))
+	end
+	if configs.primary_buffer_history_popup.height <= 1 then
+		height = math.floor(vim.o.lines * configs.primary_buffer_history_popup.height)
+	else
+		height = math.min(vim.o.lines, math.floor(configs.primary_buffer_history_popup.height))
+	end
 
 	dwin = vim.api.nvim_open_win(dbuf, true, {
 		relative = "editor",
@@ -106,7 +123,7 @@ function M.show_primary_buffer_history()
 		row = math.floor((vim.o.lines - height) / 2),
 		style = "minimal",
 		border = "rounded",
-		title = " Primary Buffer Queue (History)",
+		title = " Primary Buffer Queue (History) ",
 		title_pos = "center",
 	})
 
