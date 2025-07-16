@@ -23,8 +23,15 @@ function M.show_primary_buffer_history()
 
 	local triquetra = window.get_triquetra(cwin)
 
+	local basename_filepath_mapping = {}
+
 	if not triquetra then
 		vim.notify("No triquetra found for current window.", vim.log.levels.INFO)
+		return
+	end
+	
+	if #triquetra.primary_buffer == 0 then
+		vim.notify("No primary buffer history available.", vim.log.levels.INFO)
 		return
 	end
 
@@ -36,7 +43,19 @@ function M.show_primary_buffer_history()
 	vim.bo[dbuf].swapfile = false
 
 	vim.api.nvim_buf_set_name(dbuf, "cavediver://primary-buffer-queue-history")
-	vim.api.nvim_buf_set_lines(dbuf, 0, -1, false, vim.tbl_map(history.get_filepath_from_hash, triquetra.primary_buffer))
+	vim.api.nvim_buf_set_lines(dbuf, 0, -1, false, vim.tbl_map(function(hash)
+		local basename = M.get_smart_basename(hash)
+		local filepath = history.get_filepath_from_hash(hash)
+		if filepath then
+			if not filepath:match("^NONAME_") then
+				basename_filepath_mapping[basename] = filepath
+			else
+				basename_filepath_mapping[basename] = basename -- NONAME_X -> NONAME_X
+				basename = filepath
+			end
+		end
+		return basename
+	end, triquetra.primary_buffer))
 
 	vim.api.nvim_create_autocmd("BufDelete", {
 		buffer = dbuf,
@@ -55,9 +74,10 @@ function M.show_primary_buffer_history()
 		buffer = dbuf,
 		callback = function()
 			local lines = vim.api.nvim_buf_get_lines(dbuf, 0, -1, false)
-			lines = vim.tbl_map(function(line)
-				return vim.trim(line)
-			end, lines)
+			lines = vim.tbl_map(function(basename)
+				basename = vim.trim(basename)
+				return basename_filepath_mapping[basename] or basename
+			end, vim.tbl_filter(function(value) return vim.trim(value) ~= "" end, lines))
 			window.update_primary_buffer(lines, cwin)
 			vim.api.nvim_buf_set_lines(dbuf, 0, -1, false,
 				vim.tbl_map(history.get_filepath_from_hash, triquetra.primary_buffer))

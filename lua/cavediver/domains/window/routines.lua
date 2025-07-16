@@ -29,7 +29,9 @@ function M.update_primary_buffer(primary_filepaths, winid)
 	local valid_filepaths = {}
 	for _, filepath in ipairs(primary_filepaths) do
 		local fbufnr = vim.fn.bufnr(filepath)
-		if (vim.fn.filereadable(filepath) == 0) and (not filepath:match("^NONAME_")) then -- If it's a file that doesn't exist in the filesystem.
+		if vim.trim(filepath) == "" then
+			goto continue
+		elseif (vim.fn.filereadable(filepath) == 0) and (not filepath:match("^NONAME_")) then -- If it's a file that doesn't exist in the filesystem.
 			table.insert(error_lines, "- File does not exist: " .. filepath)
 			goto continue
 		elseif fbufnr ~= -1 and history.get_hash_from_buffer(fbufnr) == nil then -- THE USER CANNOT REGISTER A BUFFER EXPLICITLY. IT IS DONE AUTOMATICALLY. SO we throw error instead of automatically registering it.
@@ -42,6 +44,10 @@ function M.update_primary_buffer(primary_filepaths, winid)
 				goto continue
 			else
 				history.register_filepath(filepath)
+				local filehash = history.get_hash_from_filepath(filepath)
+				if filehash then
+					history.routines.track_closing_filehash_force(filehash) -- It's fine, this line guarantees that the filepath is not NONAME_
+				end
 			end
 		end
 		table.insert(valid_filepaths, filepath)
@@ -55,12 +61,12 @@ function M.update_primary_buffer(primary_filepaths, winid)
 		)
 	end
 
-	if #valid_filepaths > 0 then 
-		triquetra.primary_buffer = vim.tbl_map(history.get_hash_from_filepath, valid_filepaths)
+	if #valid_filepaths > 0 then
 		triquetra.primary_enabled = true
 	else
 		triquetra.primary_enabled = false
 	end
+	triquetra.primary_buffer = vim.tbl_map(history.get_hash_from_filepath, valid_filepaths)
 
 	loop_sm:to(loop_states.SELF)
 end
@@ -354,18 +360,18 @@ function M.swap_with_secondary(winid)
 		end
 		cbufnr = history.get_buffer_from_hash(triquetra.secondary_slot)
 		if cbufnr == nil then
+			local old_basename = require('cavediver.domains.ui').routines.get_smart_basename(triquetra.secondary_slot)
 			cbufnr = history.reopen_filehash(triquetra.secondary_slot)
-			local ui_get_basename = require('cavediver.domains.ui').routines.get_smart_basename
 			if cbufnr == nil then
 				vim.notify(
-					"Removed secondary file not found in filesystem: " .. ui_get_basename(triquetra.secondary_slot),
+					"Removed secondary file not found in filesystem: " .. old_basename,
 					vim.log.levels.WARN)
 				triquetra.secondary_slot = nil
 				loop_sm:to(loop_states.SELF)
 				return
 			else
 				remove_from_closed_buffers(triquetra.secondary_slot)
-				vim.notify("File reopened for secondary slot: " .. ui_get_basename(triquetra.secondary_slot),
+				vim.notify("File reopened for secondary slot: " .. old_basename,
 					vim.log.levels.INFO)
 			end
 		end
@@ -420,17 +426,17 @@ function M.swap_with_ternary(winid)
 
 	cbufnr = history.get_buffer_from_hash(triquetra.ternary_slot)
 	if cbufnr == nil then
+		local old_basename = require('cavediver.domains.ui').routines.get_smart_basename(triquetra.ternary_slot)
 		cbufnr = history.reopen_filehash(triquetra.ternary_slot)
-		local ui_get_basename = require('cavediver.domains.ui').routines.get_smart_basename
 		if cbufnr == nil then
-			vim.notify("Removed ternary file not found in filesystem: " .. ui_get_basename(triquetra.ternary_slot),
+			vim.notify("Removed ternary file not found in filesystem: " .. old_basename,
 				vim.log.levels.WARN)
 			triquetra.ternary_slot = nil
 			loop_sm:to(loop_states.SELF)
 			return
 		else
 			remove_from_closed_buffers(triquetra.ternary_slot)
-			vim.notify("File reopened for ternary slot: " .. ui_get_basename(triquetra.ternary_slot), vim.log.levels
+			vim.notify("File reopened for ternary slot: " .. old_basename, vim.log.levels
 				.INFO)
 		end
 	end

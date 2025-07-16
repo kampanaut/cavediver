@@ -384,6 +384,9 @@ function M.reopen_filehash(filehash)
 		M.register_buffer(bufnr)
 		M.track_buffer(filehash)
 		data.noname_content[filehash] = nil
+		if M.get_filepath_from_buffer(bufnr) ~= filepath then
+			M.unregister_filepath(filepath) -- This NONAME_ buffer is now irrelevant, we don't want to track it anymore.
+		end
 	elseif filepath and vim.fn.filereadable(filepath) == 1 then
 		bufnr = vim.fn.bufadd(filepath)
 		vim.fn.bufload(bufnr)
@@ -438,6 +441,21 @@ function M.track_closing_filehash(filehash)
 	table.insert(data.closed_buffers, filehash)
 	return true
 end
+
+
+---Force label a filehash as a closed filehash
+---
+---BE CAREFUL: 
+---    - This will not check if the filehash is registered in the hash_buffer_registry.
+---    - This is not designed for NONAME_ buffers as well!
+function M.track_closing_filehash_force(filehash)
+	if filehash == nil then
+		error("This must not happen: Closing filehash is not registered at all.")
+	end
+
+	table.insert(data.closed_buffers, filehash)
+end
+
 
 ---Reopen last closed buffer
 ---
