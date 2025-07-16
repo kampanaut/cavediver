@@ -324,7 +324,7 @@ local function serialise_buffer_history()
 			if
 				not (
 					vim.bo[wbufnr].buftype == "" or
-					(vim.api.nvim_buf_get_name(wbufnr):match("://") and triquetra) or -- track a window with current buffer that is not tracked but with the current shown bufferr as a not regular file
+					(vim.api.nvim_buf_get_name(wbufnr):match("://") and triquetra and vim.bo[wbufnr].filetype ~= "cavediver-primary-buffer-history") or -- track a window with current buffer that is not tracked but with the current shown bufferr as a not regular file
 					vim.bo[wbufnr].filetype == "image_nvim"
 				)
 			then
@@ -383,7 +383,7 @@ local function serialise_window_relationships(cwd)
 			if
 				not (
 					vim.bo[wbufnr].buftype == "" or
-					(vim.api.nvim_buf_get_name(wbufnr):match("://") and triquetra) or -- track a window with current buffer that is not tracked but with the current shown bufferr as a not regular file
+					(vim.api.nvim_buf_get_name(wbufnr):match("://") and triquetra and vim.bo[wbufnr].filetype ~= "cavediver-primary-buffer-history") or -- track a window with current buffer that is not tracked but with the current shown bufferr as a not regular file
 					vim.bo[wbufnr].filetype == "image_nvim"
 				)
 			then
