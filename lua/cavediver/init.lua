@@ -152,6 +152,16 @@ end
 
 ---Setup debug commands for inspecting internal state
 local function setup_debug_commands()
+	-- Command 0: Print Current Window Triquetra
+	vim.api.nvim_create_user_command("CavediverHistoryData", function()
+		print(vim.inspect(history.data))
+	end, { desc = "Print curernt history state" })
+	vim.api.nvim_create_user_command("CavediverWindowData", function()
+		print(vim.inspect(window.data))
+	end, { desc = "Print current window state" })
+	vim.api.nvim_create_user_command("CavediverUIData", function()
+		print(vim.inspect(ui.data))
+	end, { desc = "Print current UI state" })
 	-- Command 1: Print Current Window Triquetra
 	vim.api.nvim_create_user_command("CavediverTriquetra", function()
 		local winid = vim.api.nvim_get_current_win()
