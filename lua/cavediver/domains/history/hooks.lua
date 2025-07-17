@@ -65,7 +65,9 @@ vim.api.nvim_create_autocmd("BufDelete", {
 		-- print("HOOOY")
 		-- print_table(args)
 		-- print("BufDelete"..args.buf .. " - "..vim.api.nvim_buf_get_name(args.buf))
-		historySM:to(historySM:state(), { buf = args.buf }, states.mode.DELETE)
+		if vim.b[args.buf].skip_bufdelete ~= true then
+			historySM:to(historySM:state(), { buf = args.buf }, states.mode.DELETE)
+		end
 	end,
 })
 

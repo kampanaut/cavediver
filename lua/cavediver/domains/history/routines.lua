@@ -331,7 +331,7 @@ function M.snapshot_origin(winid)
 	local get_smart_basename = require('cavediver.domains.ui.routines').get_smart_basename
 	data.cycling_origins[winid] = require('cavediver.domains.window').get_triquetra(winid)
 
-	local current_slot = data.hash_buffer_registry.hashes[vim.api.nvim_win_get_buf(winid)]
+	local current_slot = data.hash_buffer_registry.hashes[vim.api.nvim_win_get_buf(winid)] or data.cycling_origins[winid].current_slot
 	local secondary_slot = data.cycling_origins[winid].secondary_slot
 	local sslot_display_string
 
@@ -619,23 +619,27 @@ function M.cleanup_system()
 	}
 
 	-- 1. Clean orphaned history entries (filehashes in crux without buffer registration)
-	local orphaned_hashes = {}
 	for filehash, _ in pairs(data.crux) do
-		if not data.hash_buffer_registry.buffers[filehash] then
-			table.insert(orphaned_hashes, filehash)
-		end
-	end
-
-	for _, filehash in ipairs(orphaned_hashes) do
-		data.crux[filehash] = nil
-		data.crux_internals.global[filehash] = nil
-		for winid, _ in pairs(data.crux_internals.window) do
-			if data.crux_internals.window[winid][filehash] then
-				 data.crux_internals.window[winid][filehash] = nil
+		local filepath = data.hash_filepath_registry.filepaths[filehash]
+		if not data.hash_buffer_registry.buffers[filehash] or (filepath and vim.fn.filereadable(filepath) == 0) then
+			local bufnr = -1
+			if filepath then
+				bufnr = vim.fn.bufnr(filepath)
 			end
+			data.crux[filehash] = nil
+			data.crux_internals.global[filehash] = nil
+			for winid, _ in pairs(data.crux_internals.window) do
+				if data.crux_internals.window[winid][filehash] then
+					 data.crux_internals.window[winid][filehash] = nil
+				end
+			end
+			table.insert(report.orphaned_hashes, filehash)
+			if bufnr ~= -1 and vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then
+				vim.b[bufnr].skip_bufdelete = true -- Prevents BufDelete hook from running
+				vim.cmd("bw! " .. bufnr)
+			end
+			report.orphaned_history = report.orphaned_history + 1
 		end
-		table.insert(report.orphaned_hashes, filehash)
-		report.orphaned_history = report.orphaned_history + 1
 	end
 
 	-- 2. Clean invalid closed buffers (files that no longer exist)

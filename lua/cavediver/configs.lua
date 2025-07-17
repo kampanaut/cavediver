@@ -123,7 +123,7 @@ local defaults = {
 
 		open_primary_buffer_history = "<M-;>F", -- Open primary buffer history
 	},
-	cleanup_interval = 8000,    -- seconds
+	cleanup_interval = 4000,    -- seconds
 	winbar_refresh_interval = 140 -- milliseconds
 }
 

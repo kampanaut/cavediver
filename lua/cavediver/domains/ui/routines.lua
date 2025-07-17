@@ -293,7 +293,9 @@ local function derive_cache_from_window_triquetra(winid)
 		ui_triquetra.has_primary = ui_triquetra.has_primary and window_triquetra.primary_enabled
 
 		if ui_triquetra.current_bufnr == nil then
-			error("Impossible state: current_bufnr is nil in derive_cache_from_window_triquetra() for winid " .. winid)
+			window.routines.cleanup_triquetras() -- I know it's really good to do this, but we need to clean up the triquetra.
+			return derive_cache_from_window_triquetra(winid) -- We redo it again.
+			-- error("Impossible state: current_bufnr is nil in derive_cache_from_window_triquetra() for winid " .. winid)
 		end
 
 		return ui_triquetra
