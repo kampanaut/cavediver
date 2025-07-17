@@ -218,10 +218,17 @@ local function load_window_buffer_relationships(window_buffer, cwd)
 		end
 
 		---@type Filehash|nil
-		local cfilehash, sfilehash, tfilehash
-
+		local cfilehash 
+		---@type Filehash|nil
+		local sfilehash
+		---@type Filehash|nil
+		local tfilehash
 		---@type Filehash[]|nil
 		local pfilehashes = {}
+		---@type table<Filehash, Filehash>
+		local sdisplacement_map = {}
+		---@type table<Filehash, Filehash>
+		local tdisplacement_map = {}
 
 		-- print_table(history.data)
 		-- Current buffer [1] - try to restore or use window's current buffer
@@ -265,6 +272,14 @@ local function load_window_buffer_relationships(window_buffer, cwd)
 			tfilehash = history.get_hash_from_filepath(unobfuscate_filehash_if_needed(triquetra_serialised[4], cwd))
 		end
 
+		if triquetra_serialised[5] ~= nil and triquetra_serialised ~= vim.NIL then
+			tdisplacement_map = triquetra_serialised[5]
+		end
+
+		if triquetra_serialised[6] ~= nil and triquetra_serialised ~= vim.NIL then
+			sdisplacement_map = triquetra_serialised[6]
+		end
+
 		if current_slot == nil then
 			error("Cannot load window buffer relationship: The window has an unregistered buffer.")
 		end
@@ -284,8 +299,8 @@ local function load_window_buffer_relationships(window_buffer, cwd)
 				secondary_slot = sfilehash,
 				ternary_slot = tfilehash,
 				primary_buffer = pfilehashes,
-				displacement_ternary_map = {},
-				displacement_secondary_map = {},
+				displacement_ternary_map = tdisplacement_map,
+				displacement_secondary_map = sdisplacement_map,
 				primary_enabled = (pfilehashes and #pfilehashes and true) or false
 			}
 		)
@@ -390,7 +405,18 @@ local function serialise_window_relationships(cwd)
 				goto continue
 			end
 
-			local cfilehash, sfilehash, pfilehashes, tfilehash
+			---@type Filehash|vim.NIL|nil
+			local cfilehash 
+			---@type Filehash|vim.NIL|nil
+			local sfilehash
+			---@type Filehash|vim.NIL|nil
+			local tfilehash
+			---@type Filehash[]|nil
+			local pfilehashes = {}
+			---@type table<Filehash, Filehash>|nil
+			local sdisplacement_map = {}
+			---@type table<Filehash, Filehash>|nil
+			local tdisplacement_map = {}
 
 			if not triquetra then
 				error("This is impossible. The window triquetra must exist.")
@@ -402,6 +428,9 @@ local function serialise_window_relationships(cwd)
 			pfilehashes = triquetra.primary_buffer
 			tfilehash = triquetra.ternary_slot
 
+			tdisplacement_map = triquetra.displacement_ternary_map
+			sdisplacement_map = triquetra.displacement_secondary_map
+
 			local cfilepath = history.get_filepath_from_hash(cfilehash)
 
 			if
@@ -411,7 +440,6 @@ local function serialise_window_relationships(cwd)
 			then
 				if pfilehashes ~= nil and #pfilehashes > 0 then
 					cfilehash = pfilehashes[1]
-					pfilehashes = nil
 				elseif tfilehash ~= nil then
 					cfilehash = tfilehash
 					tfilehash = nil
@@ -438,7 +466,7 @@ local function serialise_window_relationships(cwd)
 
 			-- Primary buffer (mobile)
 			if pfilehashes == nil then
-				pfilehashes = vim.NIL
+				pfilehashes = {}
 			else
 				pfilehashes = vim.tbl_map(function(hash) return obfuscate_filehash_if_needed(hash, cwd) end, pfilehashes)
 			end
@@ -450,11 +478,21 @@ local function serialise_window_relationships(cwd)
 				tfilehash = obfuscate_filehash_if_needed(tfilehash, cwd) or vim.NIL
 			end
 
+			if tdisplacement_map == nil then
+				tdisplacement_map = {}
+			end
+
+			if sdisplacement_map == nil then
+				sdisplacement_map = {}
+			end
+
 			compressed[compressed_index] = {
 				[1] = cfilehash, -- Current buffer
 				[2] = sfilehash, -- Secondary slot
 				[3] = pfilehashes, -- Primary buffer
-				[4] = tfilehash -- Ternary slot
+				[4] = tfilehash, -- Ternary slot
+				[5] = tdisplacement_map,
+				[6] = sdisplacement_map
 			}
 			compressed_index = compressed_index + 1
 			::continue::
