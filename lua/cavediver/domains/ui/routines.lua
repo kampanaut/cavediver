@@ -242,6 +242,8 @@ function M.get_smart_basename(filehash)
 	return display_name
 end
 
+local derive_cache_lock = {}
+
 local function derive_cache_from_window_triquetra(winid)
 	local window_triquetra = window.get_triquetra(winid)
 	if window_triquetra then
@@ -293,10 +295,16 @@ local function derive_cache_from_window_triquetra(winid)
 		ui_triquetra.has_primary = ui_triquetra.has_primary and window_triquetra.primary_enabled
 
 		if ui_triquetra.current_bufnr == nil then
-			window.routines.cleanup_triquetras() -- I know it's really good to do this, but we need to clean up the triquetra.
-			return derive_cache_from_window_triquetra(winid) -- We redo it again.
-			-- error("Impossible state: current_bufnr is nil in derive_cache_from_window_triquetra() for winid " .. winid)
+			if not derive_cache_lock[winid] then
+				derive_cache_lock[winid] = true
+				window.routines.cleanup_triquetras() -- I know it's really good to do this, but we need to clean up the triquetra.
+				return derive_cache_from_window_triquetra(winid) -- We redo it again.
+			else
+				error("Impossible state: current_bufnr is nil in derive_cache_from_window_triquetra() for winid " .. winid .. " , even cleanup_triquetras() couldn't fix it. So what the fuck right?")
+			end
 		end
+
+		derive_cache_lock[winid] = nil
 
 		return ui_triquetra
 	end
