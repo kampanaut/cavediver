@@ -318,7 +318,7 @@ function M.cleanup_triquetras()
 			if bufnr then
 				history.routines.unregister_buffer(bufnr)
 			end
-		elseif vim.fn.filereadable(filepath) == 0 then
+		elseif not filepath:match("^NONAME_") and vim.fn.filereadable(filepath) == 0 then
 			local bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 			if bufnr then
 				history.routines.unregister_buffer(bufnr)
@@ -403,6 +403,7 @@ function M.swap_with_secondary(winid)
 		cbufnr = history.get_buffer_from_hash(triquetra.secondary_slot)
 		if cbufnr == nil then
 			local old_basename = require('cavediver.domains.ui').routines.get_smart_basename(triquetra.secondary_slot)
+			local old_secondary_filehash = triquetra.secondary_slot
 			cbufnr = history.reopen_filehash(triquetra.secondary_slot)
 			if cbufnr == nil then
 				vim.notify(
@@ -413,7 +414,7 @@ function M.swap_with_secondary(winid)
 				return
 			else
 				remove_from_closed_buffers(triquetra.secondary_slot)
-				vim.notify("File reopened for secondary slot: " .. old_basename,
+				vim.notify("File reopened for secondary slot: " .. old_basename .. " - old: " .. old_secondary_filehash,
 					vim.log.levels.INFO)
 			end
 		end
@@ -469,6 +470,7 @@ function M.swap_with_ternary(winid)
 	cbufnr = history.get_buffer_from_hash(triquetra.ternary_slot)
 	if cbufnr == nil then
 		local old_basename = require('cavediver.domains.ui').routines.get_smart_basename(triquetra.ternary_slot)
+		local old_ternary_filehash = triquetra.ternary_slot
 		cbufnr = history.reopen_filehash(triquetra.ternary_slot)
 		if cbufnr == nil then
 			vim.notify("Removed ternary file not found in filesystem: " .. old_basename,
@@ -478,7 +480,7 @@ function M.swap_with_ternary(winid)
 			return
 		else
 			remove_from_closed_buffers(triquetra.ternary_slot)
-			vim.notify("File reopened for ternary slot: " .. old_basename, vim.log.levels
+			vim.notify("File reopened for ternary slot: " .. old_basename .. " - old: " .. old_ternary_filehash, vim.log.levels
 				.INFO)
 		end
 	end

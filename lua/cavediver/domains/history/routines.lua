@@ -381,9 +381,9 @@ function M.reopen_filehash(filehash)
 		vim.bo[bufnr].filetype = cache.filetype
 		vim.bo[bufnr].buftype = ""
 		vim.api.nvim_win_set_cursor(vim.api.nvim_get_current_win(), cache.cursor)
-		M.register_buffer(bufnr)
-		M.track_buffer(filehash)
 		data.noname_content[filehash] = nil
+		filehash = M.register_buffer(bufnr)
+		M.track_buffer(filehash)
 		if M.get_filepath_from_buffer(bufnr) ~= filepath then
 			M.unregister_filepath(filepath) -- This NONAME_ buffer is now irrelevant, we don't want to track it anymore.
 		end
@@ -600,6 +600,29 @@ function M.get_hash_from_filepath(filepath)
 	return data.hash_filepath_registry.hashes[filepath]
 end
 
+---A short routine on cleaning up the buffer from the system
+---
+---@param filepath Filepath 
+---@param filehash Filehash
+local function detach_filehash_from_crux(filepath, filehash)
+	local bufnr = -1
+	if filepath then
+		bufnr = vim.fn.bufnr(filepath)
+	end
+	data.crux[filehash] = nil
+	data.crux_internals.global[filehash] = nil
+	for winid, _ in pairs(data.crux_internals.window) do
+		if data.crux_internals.window[winid][filehash] then
+			 data.crux_internals.window[winid][filehash] = nil
+		end
+	end
+
+	if bufnr ~= -1 and vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then
+		vim.b[bufnr].skip_bufdelete = true -- Prevents BufDelete hook from running
+		vim.cmd("bw! " .. bufnr)
+	end
+end
+
 ---Comprehensive system cleanup and validation.
 ---
 ---Removes orphaned entries, validates registries, and ensures data consistency.
@@ -618,76 +641,59 @@ function M.cleanup_system()
 		updated_lists = false
 	}
 
-	-- 1. Clean orphaned history entries (filehashes in crux without buffer registration)
-	for filehash, _ in pairs(data.crux) do
-		local filepath = data.hash_filepath_registry.filepaths[filehash]
-		if not data.hash_buffer_registry.buffers[filehash] or (filepath and vim.fn.filereadable(filepath) == 0) then
-			local bufnr = -1
-			if filepath then
-				bufnr = vim.fn.bufnr(filepath)
-			end
-			data.crux[filehash] = nil
-			data.crux_internals.global[filehash] = nil
-			for winid, _ in pairs(data.crux_internals.window) do
-				if data.crux_internals.window[winid][filehash] then
-					 data.crux_internals.window[winid][filehash] = nil
-				end
-			end
-			table.insert(report.orphaned_hashes, filehash)
-			if bufnr ~= -1 and vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then
-				vim.b[bufnr].skip_bufdelete = true -- Prevents BufDelete hook from running
-				vim.cmd("bw! " .. bufnr)
-			end
-			report.orphaned_history = report.orphaned_history + 1
-		end
-	end
-
-	-- 2. Clean invalid closed buffers (files that no longer exist)
-	local invalid_closed = {}
-	for i, filehash in ipairs(data.closed_buffers) do
-		local filepath = data.hash_filepath_registry.filepaths[filehash]
-		local match_status = filepath:match("^NONAME_")
-		if
-			(not filepath) or
-			(
-				match_status and
-				(not vim.tbl_contains(data.closed_buffers, filehash))
-			) or
-			(
-				not match_status and
-				vim.fn.filereadable(filepath) == 0
-			) or
-			(
-				data.hash_buffer_registry.buffers[filehash] ~= nil
-			)
-		then
-			table.insert(invalid_closed, i)
-		end
-	end
-
-	-- Remove invalid closed buffers (reverse order to maintain indices)
-	for i = #invalid_closed, 1, -1 do
-		local filehash = data.closed_buffers[invalid_closed[i]]
-		table.insert(report.invalid_closed_hashes, filehash)
-		table.remove(data.closed_buffers, invalid_closed[i])
-		report.invalid_closed_buffers = report.invalid_closed_buffers + 1
-	end
 
 	-- 3. Clean stale hash registry entries (buffers that no longer exist)
-	local stale_bufnrs = {}
 	for filehash, bufnr in pairs(data.hash_buffer_registry.buffers) do
-		if not vim.api.nvim_buf_is_valid(bufnr) then
-			table.insert(stale_bufnrs, { filehash, bufnr })
+		local filepath = data.hash_filepath_registry.filepaths[filehash]
+		if vim.api.nvim_buf_is_loaded(bufnr) then
+			goto continue
 		end
-	end
-
-	for _, entry in ipairs(stale_bufnrs) do
-		local filehash, bufnr = entry[1], entry[2]
+		detach_filehash_from_crux(filepath, filehash)
 		table.insert(report.stale_hashes, filehash)
 		data.hash_buffer_registry.buffers[filehash] = nil
 		data.hash_buffer_registry.hashes[bufnr] = nil
 		report.stale_hash_entries = report.stale_hash_entries + 1
+		::continue::
 	end
+	
+	-- 1. Clean orphaned history entries (filehashes in crux without buffer registration)
+	for filehash, _ in pairs(data.crux) do
+		local filepath = data.hash_filepath_registry.filepaths[filehash]
+		if data.hash_buffer_registry.buffers[filehash] and (not filepath or filepath:match("^NONAME_") or vim.fn.filereadable(filepath) == 1) then
+			goto continue
+		end
+		detach_filehash_from_crux(filepath, filehash)
+		table.insert(report.orphaned_hashes, filehash)
+		report.orphaned_history = report.orphaned_history + 1
+		::continue::
+	end
+
+	-- 2. Clean invalid closed buffers (files that no longer exist)
+	for i, filehash in ipairs(data.closed_buffers) do
+		local filepath = data.hash_filepath_registry.filepaths[filehash]
+		local is_no_name = filepath:match("^NONAME_")
+		if
+			not (
+				(not filepath) or
+				(
+					not is_no_name and
+					vim.fn.filereadable(filepath) == 0
+				) or
+				(
+					data.hash_buffer_registry.buffers[filehash] ~= nil
+				)
+			)
+		then
+			goto continue
+		end
+
+		local filehash = data.closed_buffers[i]
+		table.insert(report.invalid_closed_hashes, filehash)
+		table.remove(data.closed_buffers, i)
+		report.invalid_closed_buffers = report.invalid_closed_buffers + 1
+		::continue::
+	end
+
 
 	-- 4. Validate triquetra references across windows
 	local window = require('cavediver.domains.window')

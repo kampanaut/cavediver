@@ -65,8 +65,6 @@ function M.set_buffer_relationship(winid, relationship_table)
 		primary_enabled = relationship_table.primary_buffer[1] ~= nil
     }
 
-	-- print_table(data.crux)
-
     return true
 end
 

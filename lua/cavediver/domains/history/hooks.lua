@@ -64,8 +64,9 @@ vim.api.nvim_create_autocmd("BufDelete", {
 	callback = function(args)
 		-- print("HOOOY")
 		-- print_table(args)
-		-- print("BufDelete"..args.buf .. " - "..vim.api.nvim_buf_get_name(args.buf))
+		-- print("BufUnload"..args.buf .. " - "..vim.api.nvim_buf_get_name(args.buf))
 		if vim.b[args.buf].skip_bufdelete ~= true then
+			-- print("I was ran!" .. args.buf)
 			historySM:to(historySM:state(), { buf = args.buf }, states.mode.DELETE)
 		end
 	end,
@@ -74,7 +75,7 @@ vim.api.nvim_create_autocmd("BufDelete", {
 -- What happens when we enter a buffer?
 vim.api.nvim_create_autocmd("BufEnter", {
 	callback = function(args)
-		-- print("BufEnter"..args.buf .. " - "..vim.api.nvim_buf_get_name(args.buf))
+		-- print("BufEnter "..args.buf .. " - "..vim.api.nvim_buf_get_name(args.buf) .. " - buftype: [" .. vim.bo[args.buf].buftype .. "]")
 		historySM:to(historySM:state(), { buf = args.buf }, states.mode.UPDATE)
 	end,
 })
@@ -96,5 +97,16 @@ vim.api.nvim_create_autocmd("BufFilePost", {
 		-- print(vim.bo[args.buf].buftype)
 		-- print(args.file)
 		historySM:to(historySM:state(), { buf = args.buf }, states.mode.UPDATE)
+	end
+})
+
+-- BufFilePost: Re-register new identity
+vim.api.nvim_create_autocmd("WinClosed", {
+	callback = function(args)
+		local winid = tonumber(args.file)
+		if not winid then
+			return
+		end
+		data.crux_internals.window[winid] = nil
 	end
 })
