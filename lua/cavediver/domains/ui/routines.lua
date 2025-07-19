@@ -246,69 +246,69 @@ local derive_cache_lock = {}
 
 local function derive_cache_from_window_triquetra(winid)
 	local window_triquetra = window.get_triquetra(winid)
-	if window_triquetra then
-		local ui_triquetra = data.get_or_create_window_display_cache(winid)
-
-		-- Helper function to resolve slot data from filehash
-		local function resolve_slot(filehash)
-			local filepath = history.get_filepath_from_hash(filehash)
-			if not filehash or not filepath then
-				return nil, nil, false, false, false, false
-			end
-
-			local bufnr = history.get_buffer_from_hash(filehash)
-			local display_name = M.get_smart_basename(filehash) or nil
-
-			if bufnr ~= nil then
-				-- Buffer exists in memory
-				local is_loaded = vim.api.nvim_buf_is_loaded(bufnr)
-				return bufnr, display_name, true, is_loaded, false
-			else
-				-- Check if it's a closed buffer
-				local is_closed = vim.tbl_contains(history.data.closed_buffers, filehash)
-				if is_closed then
-					-- Closed buffer - can be reopened
-					return nil, display_name, true, false, true -- exists=true, loaded=false
-				else
-					filepath = history.get_filepath_from_hash(filehash)
-					if filepath == nil then
-						error("This is unexpected: file " .. display_name .. " has no buffer or closed state. " .. winid)
-					elseif vim.fn.filereadable(filepath) == 1 then -- ignore if the file is already deleted.
-						error("This is unexpected: file " .. display_name .. " This thing happens? " .. winid)
-					end
-					return nil, nil, false, false, false
-				end
-			end
-		end
-
-		-- Update all slots using the hash-based WindowTriquetra structure
-		ui_triquetra.current_bufnr, ui_triquetra.current_display_name, _, _, _ =
-			resolve_slot(window_triquetra.current_slot)
-		ui_triquetra.primary_bufnr, ui_triquetra.primary_display_name, ui_triquetra.has_primary, _, _ =
-			resolve_slot(window_triquetra.primary_buffer[1])
-		ui_triquetra.secondary_bufnr, ui_triquetra.secondary_display_name, ui_triquetra.has_secondary, ui_triquetra.loaded_slots.secondary, ui_triquetra.deleted_slots.secondary =
-			resolve_slot(window_triquetra.secondary_slot)
-		ui_triquetra.ternary_bufnr, ui_triquetra.ternary_display_name, ui_triquetra.has_ternary, ui_triquetra.loaded_slots.ternary, ui_triquetra.deleted_slots.ternary =
-			resolve_slot(window_triquetra.ternary_slot)
-
-		-- reflect the primary_enabled state.
-		ui_triquetra.has_primary = ui_triquetra.has_primary and window_triquetra.primary_enabled
-
-		if ui_triquetra.current_bufnr == nil then
-			if not derive_cache_lock[winid] then
-				derive_cache_lock[winid] = true
-				window.routines.cleanup_triquetras() -- I know it's really good to do this, but we need to clean up the triquetra.
-				return derive_cache_from_window_triquetra(winid) -- We redo it again.
-			else
-				error("Impossible state: current_bufnr is nil in derive_cache_from_window_triquetra() for winid " .. winid .. " , even cleanup_triquetras() couldn't fix it. So what the fuck right?")
-			end
-		end
-
-		derive_cache_lock[winid] = nil
-
-		return ui_triquetra
+	if not  window_triquetra then
+		return nil
 	end
-	return nil
+	local ui_triquetra = data.get_or_create_window_display_cache(winid)
+
+	-- Helper function to resolve slot data from filehash
+	local function resolve_slot(filehash)
+		local filepath = history.get_filepath_from_hash(filehash)
+		if not filehash or not filepath then
+			return nil, nil, false, false, false, false
+		end
+
+		local bufnr = history.get_buffer_from_hash(filehash)
+		local display_name = M.get_smart_basename(filehash) or nil
+
+		if bufnr ~= nil then
+			-- Buffer exists in memory
+			local is_loaded = vim.api.nvim_buf_is_loaded(bufnr)
+			return bufnr, display_name, true, is_loaded, false
+		else
+			-- Check if it's a closed buffer
+			local is_closed = vim.tbl_contains(history.data.closed_buffers, filehash)
+			if is_closed then
+				-- Closed buffer - can be reopened
+				return nil, display_name, true, false, true -- exists=true, loaded=false
+			else
+				filepath = history.get_filepath_from_hash(filehash)
+				if filepath == nil then
+					error("This is unexpected: file " .. display_name .. " has no buffer or closed state. " .. winid)
+				elseif vim.fn.filereadable(filepath) == 1 then -- ignore if the file is already deleted.
+					error("This is unexpected: file " .. display_name .. " This thing happens? " .. winid)
+				end
+				return nil, nil, false, false, false
+			end
+		end
+	end
+
+	-- Update all slots using the hash-based WindowTriquetra structure
+	ui_triquetra.current_bufnr, ui_triquetra.current_display_name, _, _, _ =
+		resolve_slot(window_triquetra.current_slot)
+	ui_triquetra.primary_bufnr, ui_triquetra.primary_display_name, ui_triquetra.has_primary, _, _ =
+		resolve_slot(window_triquetra.primary_buffer[1])
+	ui_triquetra.secondary_bufnr, ui_triquetra.secondary_display_name, ui_triquetra.has_secondary, ui_triquetra.loaded_slots.secondary, ui_triquetra.deleted_slots.secondary =
+		resolve_slot(window_triquetra.secondary_slot)
+	ui_triquetra.ternary_bufnr, ui_triquetra.ternary_display_name, ui_triquetra.has_ternary, ui_triquetra.loaded_slots.ternary, ui_triquetra.deleted_slots.ternary =
+		resolve_slot(window_triquetra.ternary_slot)
+
+	-- reflect the primary_enabled state.
+	ui_triquetra.has_primary = ui_triquetra.has_primary and window_triquetra.primary_enabled
+
+	if ui_triquetra.current_bufnr == nil then
+		if not derive_cache_lock[winid] then
+			derive_cache_lock[winid] = true
+			window.routines.cleanup_triquetras() -- I know it's really good to do this, but we need to clean up the triquetra.
+			return derive_cache_from_window_triquetra(winid) -- We redo it again.
+		else
+			error("Impossible state: current_bufnr is nil in derive_cache_from_window_triquetra() for winid " .. winid .. " , even cleanup_triquetras() couldn't fix it. So what the fuck right?")
+		end
+	end
+
+	derive_cache_lock[winid] = nil
+
+	return ui_triquetra
 end
 
 

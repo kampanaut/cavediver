@@ -29,13 +29,6 @@ function M.get_triquetra(winid)
     return data.get_window_triquetra(winid)
 end
 
----Clean up window data when a window is closed.
----
----@param winid number Window ID that was closed
-function M.cleanup_window(winid)
-    data.crux[winid] = nil
-end
-
 ---Set a window's buffer relationship from a complete relationship table.
 ---
 ---Validates and sets the buffer relationship data for a window.

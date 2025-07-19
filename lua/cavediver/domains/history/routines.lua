@@ -98,6 +98,12 @@ function M.unregister_filepath(filepath)
 	data.hash_filepath_registry.filepaths[filehash] = nil
 end
 
+---unregister a window from the itnernal crux
+---@param winid WinId
+function M.unregister_window(winid) 
+	data.crux_internals.window[winid] = nil
+end
+
 ---Initialize the history crux and internal crux structures.
 ---
 ---@param crux_internals BufferCruxInternals

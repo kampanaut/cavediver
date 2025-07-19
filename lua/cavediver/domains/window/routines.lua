@@ -139,17 +139,16 @@ end
 ---
 ---@return nil
 function M.cleanup_triquetras()
-	local clear_window_display_cache = require("cavediver.domains.ui").data.clear_window_display_cache
 	local set_cache_from_window_triquetra = require("cavediver").ui.routines.set_cache_from_window_triquetra
 	for winid, triquetra in pairs(data.crux) do
 		local current_bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 		local filepath
 		if not current_bufnr then -- this is a special case. we can't have an unregistered
 			-- hash in the current slot. doesn't make sense.
-			local current_slot_candidate = history.get_hash_from_buffer(vim.api.nvim_get_current_buf())
+			local current_slot_candidate = history.get_hash_from_buffer(vim.api.nvim_win_get_buf(winid))
 			if current_slot_candidate then
 				vim.notify("Healed the triquetra of window " ..
-					winid .. " with current slot: " .. vim.api.nvim_get_current_buf())
+					winid .. " with current slot: " .. vim.api.nvim_win_get_buf(winid))
 				triquetra.current_slot = current_slot_candidate
 				if triquetra.current_slot == triquetra.secondary_slot then
 					triquetra.secondary_slot = nil
@@ -170,8 +169,7 @@ function M.cleanup_triquetras()
 				else
 					-- yes, this line of code appears three times in this condition branch.
 					-- we delete triquetras associated to windows that are not "regular" windows.
-					data.crux[winid] = nil
-					clear_window_display_cache(winid)
+					data.unregister_triquetra(winid)
 					goto continue
 				end
 				if cbufhash == triquetra.current_slot or vim.bo[cbufnr].buftype == "acwrite" then -- it means that the buffer didn't evolved to anything new. it was still deleted, so we fallback.
@@ -238,11 +236,10 @@ function M.cleanup_triquetras()
 						-- 	(triquetra.current_slot or "") .. " - " .. winid .. " - " .. vim.api.nvim_get_current_buf() .. " - " .. vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()))
 						vim.notify("Cleaning up triquetra of now unregular window" .. winid ..
 							" with current slot: " .. triquetra.current_slot .. " - " ..
-							vim.api.nvim_get_current_buf() ..
-							" - (" .. vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()) .. ")",
+							vim.api.nvim_win_get_buf(winid) ..
+							" - (" .. vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(winid)) .. ")",
 							vim.log.levels.INFO)
-						data.crux[winid] = nil
-						clear_window_display_cache(winid)
+						data.unregister_triquetra(winid)
 						goto continue
 					elseif #history.get_ordered_buffers() > 0 then
 						local candidate_hash = history.get_hash_from_buffer(history.get_ordered_buffers()[1].buf)
@@ -272,8 +269,7 @@ function M.cleanup_triquetras()
 						error("This is impossible. Like how the fuck did the current slot become nil???")
 					end
 				else -- it evolved, just delete it.
-					data.crux[winid] = nil
-					clear_window_display_cache(winid)
+					data.unregister_triquetra(winid)
 				end
 				goto continue
 			end
@@ -339,12 +335,10 @@ function M.cleanup_triquetras()
 				if candidate_hash then
 					triquetra.current_slot = candidate_hash
 				else
-					data.crux[winid] = nil
-					clear_window_display_cache(winid)
+					data.unregister_triquetra(winid)
 				end
 			else
-				data.crux[winid] = nil
-				clear_window_display_cache(winid)
+				data.unregister_triquetra(winid)
 			end
 		end
 
@@ -680,7 +674,7 @@ end
 function M.repopulate_window_relationships()
 	local set_cache_from_window_triquetra = require("cavediver.domains.ui").set_cache_from_window_triquetra
 	data.crux = {}
-	data.current_window = {}
+	data.last_valid_window = vim.api.nvim_get_current_buf()
 
 	for _, winid in pairs(vim.api.nvim_list_wins()) do
 		local current_slot = history.get_hash_from_buffer(vim.api.nvim_win_get_buf(winid))

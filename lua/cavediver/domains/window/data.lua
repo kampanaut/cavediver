@@ -13,20 +13,23 @@
 ---@field primary_enabled boolean Whether the primary buffer is enabled in this triquetra.
 ---@field displacement_ternary_map table<Filehash, Filehash> -- This is filename's ternary before it got displaced.
 ---@field displacement_secondary_map table<Filehash, Filehash> -- This is filename's secondary before it got displaced.
+---
+local M = {}
 
 ---@type table<number, WindowTriquetra>
-local crux = {}
+M.crux = {}
+
+local history = require('cavediver.domains.history')
 
 ---Create a new empty window buffer relationship.
 ---
 ---@param winid number Window ID to create the relationship for
-local function create_empty_window_buffer_relationship(winid)
-	local history = require('cavediver.domains.history')
+function M.register_triquetra(winid)
 	local current_slot = history.get_hash_from_buffer(vim.api.nvim_win_get_buf(winid))
 	if not current_slot then
 		error("Cannot create empty window buffer relationship: The window has an unregistered buffer.")
 	end
-    crux[winid] = {
+    M.crux[winid] = {
 		current_slot = current_slot,
 		secondary_slot = nil,
 		ternary_slot = nil,
@@ -37,21 +40,41 @@ local function create_empty_window_buffer_relationship(winid)
     }
 end
 
+function M.unregister_triquetra(winid)
+	M.crux[winid] = nil
+	history.routines.unregister_window(winid)
+	require("cavediver.domains.ui.data").clear_window_display_cache(winid)
+	history.routines.construct_crux(M.last_valid_window)
+end
+
 ---Get or create window buffer relationships for a window.
 ---
 ---@param winid number Window ID to get relationships for
 ---@return WindowTriquetra|nil relationship The window's buffer relationships
-local function get_window_relationships(winid)
-    if not crux[winid] then
+function M.get_window_triquetra(winid)
+	local wbufnr = vim.api.nvim_win_get_buf(winid)
+    if not M.crux[winid] then
 		local config = vim.api.nvim_win_get_config(winid)
-		if config.relative == "" and require('cavediver.domains.history').get_hash_from_buffer(vim.api.nvim_get_current_buf()) then 
-			-- print("Made triquetra for window " .. winid)
-			create_empty_window_buffer_relationship(winid)
+		if config.relative == "" and history.get_hash_from_buffer(wbufnr) then
+			M.register_triquetra(winid)
 		else
 			return nil
 		end
+	else
+		local cfilehash = history.get_hash_from_buffer(wbufnr)
+
+		-- this has no overlap with cleanup_triquetras(). That function handles healing triquetras with fallbacks. This one handles 
+		-- reliability of the stored triquetras, and synchronisation of our current model of the window list.
+		if cfilehash ~= M.crux[winid].current_slot and (vim.bo[wbufnr].buftype ~= "" and vim.bo[wbufnr].buftype ~= "acwrite") then
+			M.unregister_triquetra(winid)
+			return nil
+		end
+		-- this function gets tricked by other plugins thinking that the window is a regular window until it evolves to 
+		-- showing non regular buffer. 
+		--
+		-- so this is why i put this here, to ensure that the function returns up-to-date data.
     end
-    return crux[winid]
+    return M.crux[winid]
 end
 
 ---Rename a hash to a new hash across all window triquetras.
@@ -60,8 +83,8 @@ end
 ---
 ---@param old_hash Filehash The hash to be renamed
 ---@param new_hash Filehash The new hash to replace it with
-local function rename_hash_in_triquetras(old_hash, new_hash)
-    for _, triquetra in pairs(crux) do
+function M.rename_hash_in_triquetras(old_hash, new_hash)
+    for _, triquetra in pairs(M.crux) do
         -- Update slots
         if triquetra.current_slot == old_hash then
             triquetra.current_slot = new_hash
@@ -109,10 +132,10 @@ local function rename_hash_in_triquetras(old_hash, new_hash)
     end
 end
 
-return {
-    crux = crux,
-    current_window = vim.api.nvim_get_current_win(),
-    create_empty_window_buffer_relationship = create_empty_window_buffer_relationship,
-    get_window_triquetra = get_window_relationships,
-    rename_hash_in_triquetras = rename_hash_in_triquetras,
-}
+M.last_valid_window = vim.api.nvim_get_current_win()
+
+vim.defer_fn(function()
+	M.last_valid_window = vim.api.nvim_get_current_win()
+end, 200)
+
+return M
