@@ -176,8 +176,6 @@ local function load_buffer_history(buffers)
 	for saved_filehash, time in pairs(buffers.global) do
 		history.track_buffer(saved_filehash, time)
 	end
-
-	history.routines.initialise_crux_internals(buffers)
 end
 
 
@@ -651,6 +649,7 @@ function M.load_history(cwd)
 			load_closed_buffers(saved_data.closed, saved_data.noname_content or {}, cwd)
 		end
 		load_window_buffer_relationships(saved_data.windows, cwd)
+		history.routines.initialise_crux_internals(saved_data.buffers)
 	else
 		populate_history()
 	end

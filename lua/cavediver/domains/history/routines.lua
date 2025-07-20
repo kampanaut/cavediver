@@ -104,6 +104,8 @@ function M.unregister_window(winid)
 	data.crux_internals.window[winid] = nil
 end
 
+local previous_window_constructed = nil
+
 ---Initialize the history crux and internal crux structures.
 ---
 ---@param crux_internals BufferCruxInternals
@@ -128,7 +130,12 @@ function M.initialise_crux_internals(crux_internals)
 		data.crux_internals.window[actual_winid] = window_crux_serialised
 	end
 	data.crux_internals.global = crux_internals.global
-	M.construct_crux(vim.api.nvim_get_current_win())
+	local cwin = require('cavediver.domains.window').data.last_valid_window
+	M.construct_crux(cwin)
+	previous_window_constructed = cwin
+	vim.defer_fn(function()
+		M.construct_crux(require('cavediver.domains.window').data.last_valid_window)
+	end, 80)
 end
 
 ---Construct the crux from the internal cruxes, from the global and
@@ -140,6 +147,13 @@ end
 ---@param winid WinId|nil
 function M.construct_crux(winid)
 	local global_copy = vim.fn.deepcopy(data.crux_internals.global)
+
+	if previous_window_constructed == winid then
+		return
+	else
+		previous_window_constructed = winid
+	end
+
 	if not winid or configs.bufferline.history_view == "global" then
 		data.crux = global_copy
 		return

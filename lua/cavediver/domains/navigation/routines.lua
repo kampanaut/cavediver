@@ -91,7 +91,7 @@ function M.find_most_recent_tracked_window()
 
 	if cwin == window.data.last_valid_window then
 		return window.data.last_valid_window
-	elseif window.get_triquetra(cwin) then
+	elseif vim.api.nvim_win_is_valid(cwin) and window.get_triquetra(cwin) then
 		window.data.last_valid_window = cwin
 		return cwin
 	elseif window.get_triquetra(window.data.last_valid_window) then

@@ -50,7 +50,9 @@ function M.unregister_triquetra(winid)
 	history.routines.unregister_window(winid)
 	require("cavediver.domains.ui.data").clear_window_display_cache(winid)
 	M.last_valid_window = navigation.get_the_previous_window_traverse_chain(winid)
-	history.routines.construct_crux(M.last_valid_window)
+	if M.last_valid_window then
+		history.routines.construct_crux(M.last_valid_window)
+	end
 end
 
 ---Get or create window buffer relationships for a window.
@@ -138,7 +140,9 @@ function M.rename_hash_in_triquetras(old_hash, new_hash)
     end
 end
 
+---@type WinId|nil
 M.last_valid_window = vim.api.nvim_get_current_win()
+---@type WinId
 M.current_window = vim.api.nvim_get_current_win()
 
 vim.defer_fn(function()
