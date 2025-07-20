@@ -614,7 +614,23 @@ local function restore_from_displacement_map(type, triquetra)
 		remembered_relationship = remembered_mapping[triquetra.current_slot]
 	end
 
-	if (remembered_relationship ~= nil) and (history.get_filepath_from_hash(remembered_relationship) ~= nil) and (remembered_relationship ~= current_relationship) then
+	local filepath = history.get_filepath_from_hash(remembered_relationship)
+
+	if not remembered_relationship then
+		vim.notify(
+			"No " ..
+			type ..
+			" relationship found for restoration. It means you hadn't displaced a current buffer yet to the " ..
+			type .. " slot.", vim.log.levels.WARN)
+	elseif not filepath then
+		error("This impossible error should never happen. Remembered " .. type .. " is not registered in history.")
+	elseif vim.fn.filereadable(filepath) == 0 then
+		vim.notify("Remembered " .. type .. " is not found in filesystem anymore.", vim.log.levels.WARN)
+		triquetra["displacement_" .. type .. "_map"][triquetra.current_slot] = nil
+	elseif remembered_relationship == current_relationship then
+		error("This is impossible. Remembered " ..
+			type .. " is the same as current " .. type .. ". It should be different for flip flop.")
+	else
 		if type == "ternary" then
 			if remembered_relationship == triquetra.secondary_slot then
 				triquetra.secondary_slot = triquetra.ternary_slot
@@ -633,17 +649,6 @@ local function restore_from_displacement_map(type, triquetra)
 			vim.notify("Restored " .. type .. " slot to: " .. remembered_relationship, vim.log.levels.INFO)
 		end
 		triquetra["displacement_" .. type .. "_map"][triquetra.current_slot] = current_relationship
-	elseif (remembered_relationship == nil) then
-		vim.notify(
-			"No " ..
-			type ..
-			" relationship found for restoration. It means you hadn't displaced a current buffer yet to the " ..
-			type .. " slot.", vim.log.levels.WARN)
-	elseif history.get_filepath_from_hash(remembered_relationship) == nil then
-		error("This impossible error should never happen. Remembered " .. type .. " is not registered in history.")
-	else
-		error("This is impossible. Remembered " ..
-			type .. " is the same as current " .. type .. ". It should be different for flip flop.")
 	end
 	loop_sm:to(loop_states.SELF)
 end

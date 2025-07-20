@@ -28,23 +28,18 @@ navigationSM:on(states.CYCLING, states.NORMAL, "stop_cycling", function(context)
 end, 1, true, states.mode.CYCLE)
 
 navigationSM:on("*", "*", "winenter_record_window", function(context)
-	local current_tab = vim.api.nvim_get_current_tabpage()
 	local current_win = vim.api.nvim_get_current_win()
 	local previous_win = vim.fn.win_getid(vim.fn.winnr("#"))
 
+	if previous_win == 0 then 
+		local window = require('cavediver.domains.window.data')
+		previous_win = window.last_valid_window
+	end
+
 	if previous_win and previous_win ~= current_win then
-		routines.record_window_jump(current_tab, previous_win, current_win)
+		routines.record_window_jump(previous_win, current_win)
 	end
 end, 1, true, states.mode.WINENTER)
-
-vim.api.nvim_create_autocmd({"TabClosed", "WinClosed"}, {
-	callback = function(args)
-		local tab_id = tonumber(args.file)
-		if tab_id and data.window_jump_history[tab_id] then
-			data.window_jump_history[tab_id] = nil
-		end
-	end,
-})
 
 vim.api.nvim_create_autocmd("WinEnter", {
 	callback = function(_)

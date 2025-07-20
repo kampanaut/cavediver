@@ -35,65 +35,46 @@ local function skippable_window(winid)
 	return filetype == "minimap"
 end
 
-function M.record_window_jump(tabnr, from_win, to_win)
-	if not data.window_jump_history[tabnr] then
-		data.window_jump_history[tabnr] = {}
-	end
-
+function M.record_window_jump(from_win, to_win)
 	if not skippable_window(from_win) and vim.api.nvim_win_is_valid(from_win) then
-		data.window_jump_history[tabnr][to_win] = from_win
+		data.window_jump_history[to_win] = from_win
 	end
 end
 
 function M.toggle_window()
-	local ctab = vim.api.nvim_get_current_tabpage()
 	local cwin = vim.api.nvim_get_current_win()
 
-	if not data.window_jump_history[ctab] then
-		vim.notify("No previous window recorded yet, cannot toggle.", vim.log.levels.WARN)
-		return
-	end
-
-	local previous_win = data.window_jump_history[ctab][cwin]
+	local previous_win = data.window_jump_history[cwin]
 
 	if
 		previous_win and
 		vim.api.nvim_win_is_valid(previous_win) and
 		not (skippable_window(previous_win))
 	then
-		M.record_window_jump(ctab, cwin, previous_win)
+		M.record_window_jump(cwin, previous_win)
 		vim.api.nvim_set_current_win(previous_win)
 	else
 		vim.notify("No valid previous window to toggle to.", vim.log.levels.WARN)
 	end
 end
 
-function M.find_most_recent_tracked_window()
-	local ctab = vim.api.nvim_get_current_tabpage()
-	local cwin = vim.api.nvim_get_current_win()
+function M.get_the_previous_window_traverse_chain(cwin)
 	local window = require('cavediver.domains.window')
+	if not cwin then
+		vim.notify("No current window to trace.", vim.log.levels.WARN)
+		return
+	end
 
-	
-	-- Check if current window is already tracked
-	if window.get_triquetra(cwin) then
-		return cwin
-	end
-	
-	-- Trace back through window jump history to find tracked window
-	if not data.window_jump_history[ctab] or not next(data.window_jump_history[ctab]) then
-		return window.data.last_valid_window
-	end
-	
 	local visited = {}
 	local check_win = cwin
-	
+
 	while check_win and not visited[check_win] do
 		visited[check_win] = true
-		local previous_win = data.window_jump_history[ctab][check_win]
-		
+		local previous_win = data.window_jump_history[check_win]
 		if previous_win and vim.api.nvim_win_is_valid(previous_win) then
 			local buf = vim.api.nvim_win_get_buf(previous_win)
 			if history.get_hash_from_buffer(buf) then
+				window.data.last_valid_window = previous_win
 				return previous_win  -- Found tracked window
 			end
 			check_win = previous_win
@@ -101,7 +82,23 @@ function M.find_most_recent_tracked_window()
 			break
 		end
 	end
-	return window.data.last_valid_window
+	return nil
+end
+
+function M.find_most_recent_tracked_window()
+	local window = require('cavediver.domains.window')
+	local cwin = window.data.current_window
+
+	if cwin == window.data.last_valid_window then
+		return window.data.last_valid_window
+	elseif window.get_triquetra(cwin) then
+		window.data.last_valid_window = cwin
+		return cwin
+	elseif window.get_triquetra(window.data.last_valid_window) then
+		return window.data.last_valid_window
+	end
+
+	return M.get_the_previous_window_traverse_chain(cwin)
 end
 
 return M

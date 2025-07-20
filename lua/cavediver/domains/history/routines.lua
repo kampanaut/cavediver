@@ -211,7 +211,7 @@ function M.untrack_buffer(bufnr)
 	end
 
 	for winid, _ in pairs(data.crux_internals.window) do
-		if filehash ~= nil then 
+		if filehash ~= nil then
 			data.crux_internals.window[winid][filehash] = nil
 		end
 	end
@@ -627,6 +627,8 @@ local function detach_filehash_from_crux(filepath, filehash)
 		vim.b[bufnr].skip_bufdelete = true -- Prevents BufDelete hook from running
 		vim.cmd("bw! " .. bufnr)
 	end
+	data.hash_buffer_registry.buffers[filehash] = nil
+	data.hash_buffer_registry.hashes[bufnr] = nil
 end
 
 ---Comprehensive system cleanup and validation.
@@ -656,8 +658,6 @@ function M.cleanup_system()
 		end
 		detach_filehash_from_crux(filepath, filehash)
 		table.insert(report.stale_hashes, filehash)
-		data.hash_buffer_registry.buffers[filehash] = nil
-		data.hash_buffer_registry.hashes[bufnr] = nil
 		report.stale_hash_entries = report.stale_hash_entries + 1
 		::continue::
 	end

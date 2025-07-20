@@ -119,14 +119,13 @@ history.sm:on(history.states.DETACHED, history.states.DETACHED, "nondisplacement
 end, 2, true, history.states.mode.UPDATE)
 
 navigation.sm:on("*", "*", "winenter_track_current_window", function(context)
-	local last_valid_window = vim.api.nvim_get_current_win()
-	if data.crux[last_valid_window] then
-		data.last_valid_window = last_valid_window
-	end
+	local current_window = vim.api.nvim_get_current_win()
+	data.current_window = current_window
 end, 2, true, navigation.states.mode.WINENTER)
 
 vim.api.nvim_create_autocmd("WinClosed", {
 	callback = function(args)
-		data.crux[tonumber(args.file)] = nil
+		local winid = tonumber(args.file)
+		data.unregister_triquetra(winid)
 	end,
 })

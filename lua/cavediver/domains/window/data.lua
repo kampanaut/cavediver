@@ -41,9 +41,15 @@ function M.register_triquetra(winid)
 end
 
 function M.unregister_triquetra(winid)
+	local navigation = require('cavediver.domains.navigation.routines')
+	if not M.crux[winid] then
+		return
+	end
+
 	M.crux[winid] = nil
 	history.routines.unregister_window(winid)
 	require("cavediver.domains.ui.data").clear_window_display_cache(winid)
+	M.last_valid_window = navigation.get_the_previous_window_traverse_chain(winid)
 	history.routines.construct_crux(M.last_valid_window)
 end
 
@@ -133,9 +139,14 @@ function M.rename_hash_in_triquetras(old_hash, new_hash)
 end
 
 M.last_valid_window = vim.api.nvim_get_current_win()
+M.current_window = vim.api.nvim_get_current_win()
 
 vim.defer_fn(function()
-	M.last_valid_window = vim.api.nvim_get_current_win()
+	local current_window = vim.api.nvim_get_current_win()
+	if M.crux[current_window] then
+		M.last_valid_window = current_window
+		M.current_window = current_window
+	end
 end, 200)
 
 return M

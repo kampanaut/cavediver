@@ -468,7 +468,7 @@ local function construct_winbar_string(winid, theme)
 				history.get_buffer_from_hash(window_triquetra.current_slot) or "lookup_failed",
 			actual_winbuf = vim.api.nvim_win_get_buf(winid)
 		}
-		vim.notify("WINBAR STATE CORRUPTION: current_bufnr is nil | " .. vim.inspect(debug_info), vim.log.levels.ERROR)
+		vim.notify("WINBAR STATE CORRUPTION: current_bufnr is nil | " .. vim.inspect(debug_info), vim.log.levels.WARN)
 		vim.wo[winid].winbar = ""
 		return
 	end
@@ -605,19 +605,6 @@ function M.is_real_file(bufnr, win_id)
 		return false
 	end
 
-	if
-		(
-			(
-				filetype == "minimap" or
-				filetype == "Avante" or
-				filetype == "image_nvim"
-			) and
-			vim.api.nvim_win_get_height(win_id) > 30
-		)
-	then -- special exceptions
-		return true
-	end
-
 	-- In the silence between keystrokes, we find truth
 	local value = (buftype == "" or buftype == "terminal" or buftype == "acwrite") -- Empty buftype signifies a normal file buffer
 		and vim.api.nvim_buf_is_loaded(bufnr)
@@ -625,7 +612,6 @@ function M.is_real_file(bufnr, win_id)
 		and not vim.tbl_contains(data.excluded_filetypes, filetype)
 		-- Allow no-name buffers for regular windows, exclude for popups
 		and (bufname ~= "" or win_config.relative == "")
-		and window.get_triquetra(win_id)
 
 	return value
 end
@@ -646,7 +632,7 @@ local function update_all_winbars()
 	-- local current_win = vim.api.nvim_get_current_win()
 
 	-- First pass: identify windows touching the upper boundary
-	for _, win in ipairs(vim.api.nvim_list_wins()) do
+	for win, _ in pairs(window.data.crux) do
 		local buf = vim.api.nvim_win_get_buf(win)
 		if M.is_real_file(buf, win) then
 			if window_touches_top(win) then
