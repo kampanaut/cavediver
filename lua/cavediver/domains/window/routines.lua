@@ -260,8 +260,36 @@ function M.cleanup_triquetras()
 								"This is impossible. Ordered history buffers should always have a hash associated with it.")
 						end
 					else
-						vim.cmd("enew") -- create a new buffer if nothing is available.
-						goto continue
+						local success, message = pcall(function() vim.cmd("enew") end)
+						if success or (message ~= nil and message:match("BufDelete Autocommand")) then
+							-- Yes we just ignore the error, and don't try to heal this anymore (while every alternative is exhausted 
+							-- at this point). We just continue to the next window triquetra.
+							--
+							-- It is implied that there is no history, and no other slots, just the NO_NAME current_slot buffer and 
+							-- NO_NAME current_buffer that is being replaced by... oil buffer for example. So BufDelete gets called, 
+							-- and we arrive here, as cleanup_triquetras() is then called along the way in the BufDelete pipeline. 
+							-- We capture any error that happens in BufDelete Autocmd. So yes we just ignore the error and not 
+							-- attempt any self-healing, as this would be just modified. SPECIAL EXCEPTION!
+							--
+							-- And I wrote this "if block" this way so that I can write the comment above in an intuitive way. 
+							-- Rather than doing inversion.
+							--
+							-- vim throws an error when we try to make a new buffer when our current buffer is still a no name 
+							-- buffer being deleted.
+							goto continue
+						else
+							-- print(vim.inspect({
+							-- 	current_buf_bufnr = (cbufnr or "nil"),
+							-- 	current_buf_bufname = (cbufname or "nil"),
+							-- 	current_buf_filehash = (cbufhash or "nil"),
+							-- 	current_buf_filepath = (history.get_filepath_from_hash(cbufhash) or "nil"),
+							-- 	triquetra_current_slot_bufnr = (current_bufnr or "nil"),
+							-- 	triquetra_current_slot_filehash = (triquetra.current_slot or "nil"),
+							-- 	triquetra_current_slot_filepath = (history.get_filepath_from_hash(triquetra.current_slot) or "nil"),
+							-- }))
+							data.unregister_triquetra(winid)
+							goto continue
+						end
 					end
 					if vim.bo[cbufnr].buftype == "acwrite" then -- we skip oil buffers, since they are not file buffers.
 						goto continue

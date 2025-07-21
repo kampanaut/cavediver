@@ -211,6 +211,13 @@ function M.track_buffer(filehash, time)
 		end
 		data.crux_internals.window[winid][filehash] = data.history_index - 1
 	end
+
+	for i, closed_filehash in ipairs(data.closed_buffers) do
+		if closed_filehash == filehash then
+			table.remove(data.closed_buffers, i)
+			break
+		end
+	end
 end
 
 ---Untrack the buffer access in the history crux.
@@ -644,8 +651,14 @@ local function detach_filehash_from_crux(filepath, filehash)
 		vim.b[bufnr].skip_bufdelete = true -- Prevents BufDelete hook from running
 		vim.cmd("bw! " .. bufnr)
 	end
+	if filehash == nil then
+		return
+	end
+	bufnr = data.hash_buffer_registry.buffers[filehash]
+	if bufnr then
+		data.hash_buffer_registry.hashes[bufnr] = nil
+	end
 	data.hash_buffer_registry.buffers[filehash] = nil
-	data.hash_buffer_registry.hashes[bufnr] = nil
 end
 
 ---Comprehensive system cleanup and validation.
