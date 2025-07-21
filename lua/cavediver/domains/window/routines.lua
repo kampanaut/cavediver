@@ -156,16 +156,21 @@ function M.cleanup_triquetras()
 					triquetra.ternary_slot = nil
 				end
 			else
+				-- print("Running cleanup_triquetras [" .. winid .. "] with unregistered current slot: " .. (history.get_filepath_from_hash(triquetra.current_slot) or "nil"))
 				-- yes if the noname buffer turns evolved into a terminal, we don't want to track it.
 				--
 				-- but there is a catch, what if the buffer's file was just deleted along the way? Then
 				-- we just remove that current slot from the triquetra, and replace it with ternary, then
 				-- secondary, then primary, then most recent buffer, if the tracked is more than 1.
 				-- print("(2) Deleted window triquetra of bufnr: " .. index)
-				local cbufnr, cbufhash
+				local cbufnr, cbufhash, cbufname
 				if vim.api.nvim_win_is_valid(winid) then
 					cbufnr = vim.api.nvim_win_get_buf(winid)
-					cbufhash = history.routines.get_filehash(vim.api.nvim_buf_get_name(cbufnr))
+					cbufname = vim.api.nvim_buf_get_name(cbufnr)
+					if cbufname == "" then 
+						cbufname = tostring("NONAME_" .. tostring(cbufnr))
+					end
+					cbufhash = history.routines.get_filehash(cbufname)
 				else
 					-- yes, this line of code appears three times in this condition branch.
 					-- we delete triquetras associated to windows that are not "regular" windows.
@@ -187,6 +192,7 @@ function M.cleanup_triquetras()
 						if not resolved and bufnr and vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then
 							vim.cmd("bw! " .. bufnr)
 						end
+						-- print("#1")
 					end
 					if not resolved and triquetra.secondary_slot and history.get_buffer_from_hash(triquetra.secondary_slot) then
 						triquetra.current_slot = triquetra.secondary_slot
@@ -196,6 +202,7 @@ function M.cleanup_triquetras()
 						if not resolved and bufnr and vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then
 							vim.cmd("bw! " .. bufnr)
 						end
+						-- print("#2")
 					end
 					if not resolved and triquetra.primary_buffer[1] and history.get_buffer_from_hash(triquetra.primary_buffer[1]) then
 						triquetra.current_slot = triquetra.primary_buffer[1]
@@ -204,11 +211,13 @@ function M.cleanup_triquetras()
 						if not resolved and bufnr and vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then
 							vim.cmd("bw! " .. bufnr)
 						end
+						-- print("#3")
 					end
 
 					if resolved then -- I know this is fucking stupid, but I don't want to change the structure of this function.
 						history.routines.update_buffer_history_ordered()
 						history.routines.update_buffer_history_ordered_nonharpooned()
+						-- print("#4")
 						goto apply
 					end
 
@@ -242,6 +251,7 @@ function M.cleanup_triquetras()
 						data.unregister_triquetra(winid)
 						goto continue
 					elseif #history.get_ordered_buffers() > 0 then
+						-- print("#5")
 						local candidate_hash = history.get_hash_from_buffer(history.get_ordered_buffers()[1].buf)
 						if candidate_hash then
 							triquetra.current_slot = candidate_hash
@@ -269,6 +279,17 @@ function M.cleanup_triquetras()
 						error("This is impossible. Like how the fuck did the current slot become nil???")
 					end
 				else -- it evolved, just delete it.
+					-- print all the variables
+					--
+					-- print(vim.inspect({
+					-- 	current_buf_bufnr = (cbufnr or "nil"),
+					-- 	current_buf_bufname = (cbufname or "nil"),
+					-- 	current_buf_filehash = (cbufhash or "nil"),
+					-- 	current_buf_filepath = (history.get_filepath_from_hash(cbufhash) or "nil"),
+					-- 	triquetra_current_slot_bufnr = (current_bufnr or "nil"),
+					-- 	triquetra_current_slot_filehash = (triquetra.current_slot or "nil"),
+					-- 	triquetra_current_slot_filepath = (history.get_filepath_from_hash(triquetra.current_slot) or "nil"),
+					-- }))
 					data.unregister_triquetra(winid)
 				end
 				goto continue

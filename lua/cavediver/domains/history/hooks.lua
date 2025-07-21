@@ -49,6 +49,7 @@ historySM:on("*", "*", "handle_deletion", function(context, from, to)
 	-- print("SHEEESH")
 	local filehash = routines.get_hash_from_buffer(context.buf)
 	if filehash then -- if it's registered, then we untrack it. Ignore the untegistered, because they are unrecongised by BufEnter.
+		-- print("Deleting buffer: " .. context.buf .. " with filehash: " .. filehash .. "\n" .. debug.traceback())
 		routines.track_closing_filehash(filehash)
 		routines.untrack_buffer(context.buf)
 		routines.unregister_buffer(context.buf)

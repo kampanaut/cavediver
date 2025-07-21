@@ -134,8 +134,11 @@ function M.initialise_crux_internals(crux_internals)
 	M.construct_crux(cwin)
 	previous_window_constructed = cwin
 	vim.defer_fn(function()
-		M.construct_crux(require('cavediver.domains.window').data.last_valid_window)
-	end, 80)
+		local new_cwin = require('cavediver.domains.window').data.last_valid_window
+		if new_cwin ~= cwin then
+			M.construct_crux(new_cwin)
+		end
+	end, 210)
 end
 
 ---Construct the crux from the internal cruxes, from the global and

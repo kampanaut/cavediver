@@ -38,6 +38,7 @@ function M.register_triquetra(winid)
 		displacement_secondary_map = {},
 		primary_enabled = false,
     }
+	-- print("Registered triquetra for window " .. winid .. " with current slot: " .. current_slot .. "\n" .. debug.traceback())
 end
 
 function M.unregister_triquetra(winid)
@@ -53,6 +54,7 @@ function M.unregister_triquetra(winid)
 	if M.last_valid_window then
 		history.routines.construct_crux(M.last_valid_window)
 	end
+	-- print("Unregistered triquetra for window " .. winid .. "\n" .. debug.traceback())
 end
 
 ---Get or create window buffer relationships for a window.
