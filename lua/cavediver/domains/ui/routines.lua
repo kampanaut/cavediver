@@ -596,6 +596,7 @@ end
 
 function M.is_real_file(bufnr, win_id)
 	local buftype = vim.bo[bufnr].buftype
+	local filetype = vim.bo[bufnr].filetype
 	local bufname = vim.api.nvim_buf_get_name(bufnr)
 	local filetype = vim.bo[bufnr].filetype
 	local win_config = vim.api.nvim_win_get_config(win_id)
@@ -603,6 +604,10 @@ function M.is_real_file(bufnr, win_id)
 	-- Exclude floating/popup windows
 	if win_config.relative ~= "" then
 		return false
+	end
+
+	if filetype == "image_nvim" then
+		return true
 	end
 
 	-- In the silence between keystrokes, we find truth

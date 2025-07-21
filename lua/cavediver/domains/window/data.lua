@@ -41,6 +41,8 @@ function M.register_triquetra(winid)
 	-- print("Registered triquetra for window " .. winid .. " with current slot: " .. current_slot .. "\n" .. debug.traceback())
 end
 
+local counter = 0
+
 function M.unregister_triquetra(winid)
 	local navigation = require('cavediver.domains.navigation.routines')
 	if not M.crux[winid] then
@@ -71,11 +73,24 @@ function M.get_window_triquetra(winid)
 			return nil
 		end
 	else
-		local cfilehash = history.get_hash_from_buffer(wbufnr)
+		local wfilehash = history.get_hash_from_buffer(wbufnr)
 
+		-- debug print
+		-- if wfilehash ~= M.crux[winid].current_slot then
+		-- 	counter = counter + 1
+		-- 	print("Warning: Mismatch in current slot for window " .. (winid or "nil") .. ". Expected: " .. (M.crux[winid].current_slot or "nil") .. ", got: " .. (wfilehash or "nil") .. "counter: " .. counter .. "\n" .. debug.traceback())
+		-- end
+		--
 		-- this has no overlap with cleanup_triquetras(). That function handles healing triquetras with fallbacks. This one handles 
 		-- reliability of the stored triquetras, and synchronisation of our current model of the window list.
-		if cfilehash ~= M.crux[winid].current_slot and (vim.bo[wbufnr].buftype ~= "" and vim.bo[wbufnr].buftype ~= "acwrite") then
+		if
+			wfilehash ~= M.crux[winid].current_slot and
+			(
+				vim.bo[wbufnr].buftype ~= "" and
+				vim.bo[wbufnr].buftype ~= "acwrite" and
+				vim.bo[wbufnr].filetype ~= "image_nvim"
+			)
+		then
 			M.unregister_triquetra(winid)
 			return nil
 		end

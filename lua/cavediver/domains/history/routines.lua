@@ -37,7 +37,7 @@ end
 ---@return Filehash filehash
 function M.register_buffer(bufnr)
 	local filepath = vim.api.nvim_buf_get_name(bufnr)
-	if vim.bo[bufnr].buftype ~= "" and vim.bo[bufnr].buftype == "image_nvim" then
+	if vim.bo[bufnr].buftype ~= "" and vim.bo[bufnr].filetype ~= "image_nvim" then
 		error("I don't want to track non-file buffers.")
 	end
 	if filepath == "" then
