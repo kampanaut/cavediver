@@ -57,6 +57,14 @@ function M.register_buffer(bufnr)
 	data.hash_filepath_registry.filepaths[filehash] = filepath
 	data.hash_filepath_registry.hashes[filepath] = filehash
 
+	-- print(
+	-- 	"Registered buffer: " .. bufnr ..
+	-- 	"\n with filehash: " .. filehash ..
+	-- 	"\n with filepath: " .. filepath ..
+	-- 	"\n with filetype: " .. vim.bo[bufnr].filetype ..
+	-- 	"\n" .. debug.traceback()
+	-- )
+
 	return filehash
 end
 
@@ -73,6 +81,8 @@ function M.register_filepath(filepath)
 
 	data.hash_filepath_registry.hashes[filepath] = filehash
 	data.hash_filepath_registry.filepaths[filehash] = filepath
+
+	-- print("Registered filepath: " .. filepath .. "\n with filehash: " .. filehash)
 end
 
 ---Unregister a buffer from the regietry
@@ -85,6 +95,8 @@ function M.unregister_buffer(bufnr)
 
 	data.hash_buffer_registry.hashes[bufnr] = nil
 	data.hash_buffer_registry.buffers[filehash] = nil
+
+	-- print("Unregistered buffer: " .. bufnr .. "\n with filehash: " .. filehash .. "\n" .. debug.traceback())
 end
 
 ---unregister a filepath from the registry
@@ -96,6 +108,8 @@ function M.unregister_filepath(filepath)
 
 	data.hash_filepath_registry.hashes[filepath] = nil
 	data.hash_filepath_registry.filepaths[filehash] = nil
+
+	-- print("Unregistered filepath: " .. filepath .. "\n with filehash: " .. filehash .. "\n" .. debug.traceback())
 end
 
 ---unregister a window from the itnernal crux
