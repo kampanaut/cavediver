@@ -501,6 +501,18 @@ function M.track_closing_filehash_force(filehash)
 end
 
 
+---Check if filehash is still in closed_buffers
+---
+---@param filehash Filehash
+function M.is_filehash_closed(filehash)
+	if filehash == nil then 
+		return false
+	end
+
+	return vim.tbl_contains(data.closed_buffers, filehash)
+end
+
+
 ---Reopen last closed buffer
 ---
 ---@return Bufnr|nil bufnr Buffer number of the reopened buffer, or nil if no closed buffers exist

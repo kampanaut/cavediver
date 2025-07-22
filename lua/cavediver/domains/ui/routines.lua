@@ -264,19 +264,31 @@ local function derive_cache_from_window_triquetra(winid)
 		if bufnr ~= nil then
 			-- Buffer exists in memory
 			local is_loaded = vim.api.nvim_buf_is_loaded(bufnr)
+			derive_cache_lock[winid] = nil
 			return bufnr, display_name, true, is_loaded, false
 		else
 			-- Check if it's a closed buffer
 			local is_closed = vim.tbl_contains(history.data.closed_buffers, filehash)
 			if is_closed then
 				-- Closed buffer - can be reopened
+				derive_cache_lock[winid] = nil
 				return nil, display_name, true, false, true -- exists=true, loaded=false
 			else
 				filepath = history.get_filepath_from_hash(filehash)
 				if filepath == nil then
-					error("This is unexpected: file " .. display_name .. " has no buffer or closed state. " .. winid)
+					if not derive_cache_lock[winid] then
+						window.routines.cleanup_triquetras() -- I know it's really good to do this, but we need to clean up the triquetra.
+						return nil, nil, false, false, false
+					else
+						error("This is unexpected: file " .. display_name .. " has no buffer or closed state. " .. winid .. "\n" .. debug.traceback())
+					end
 				elseif vim.fn.filereadable(filepath) == 1 then -- ignore if the file is already deleted.
-					error("This is unexpected: file " .. display_name .. " This thing happens? " .. winid)
+					if not derive_cache_lock[winid] then
+						window.routines.cleanup_triquetras() -- I know it's really good to do this, but we need to clean up the triquetra.
+						return nil, nil, false, false, false
+					else
+						error("This is unexpected: file " .. display_name .. " This thing happens? " .. winid .. "\n" .. debug.traceback())
+					end
 				end
 				return nil, nil, false, false, false
 			end

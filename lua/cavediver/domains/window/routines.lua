@@ -142,7 +142,7 @@ function M.cleanup_triquetras()
 	local set_cache_from_window_triquetra = require("cavediver").ui.routines.set_cache_from_window_triquetra
 	for winid, triquetra in pairs(data.crux) do
 		local current_bufnr = history.get_buffer_from_hash(triquetra.current_slot)
-		local filepath
+		local filepath, bufnr
 		if not current_bufnr then -- this is a special case. we can't have an unregistered
 			-- hash in the current slot. doesn't make sense.
 			local current_slot_candidate = history.get_hash_from_buffer(vim.api.nvim_win_get_buf(winid))
@@ -325,8 +325,26 @@ function M.cleanup_triquetras()
 		end
 
 		filepath = history.get_filepath_from_hash(triquetra.secondary_slot)
-		if triquetra.secondary_slot ~= nil and (not filepath or (not filepath:match("^NONAME_") and vim.fn.filereadable(filepath) == 0)) then
-			local bufnr = history.get_buffer_from_hash(triquetra.secondary_slot)
+		bufnr = history.get_buffer_from_hash(triquetra.secondary_slot)
+		if 
+			triquetra.secondary_slot ~= nil and
+			(
+				not filepath or
+				(
+					not filepath:match("^NONAME_") and
+					(
+						vim.fn.filereadable(filepath) == 0 or
+						(
+							bufnr == nil and
+							not history.routines.is_filehash_closed(triquetra.ternary_slot)
+							-- i.e. if the buffer is not registered (typically means that buffer is closed) and 
+							-- it is not registered as closed in the closed buffers list. something is wrong 
+							-- with the triquetra, so we just remove it.
+						)
+					)
+				)
+			)
+		then
 			if bufnr then
 				history.routines.unregister_buffer(bufnr)
 			end
@@ -334,8 +352,26 @@ function M.cleanup_triquetras()
 		end
 
 		filepath = history.get_filepath_from_hash(triquetra.ternary_slot)
-		if triquetra.ternary_slot ~= nil and (not filepath or (not filepath:match("^NONAME_") and vim.fn.filereadable(filepath) == 0)) then
-			local bufnr = history.get_buffer_from_hash(triquetra.ternary_slot)
+		bufnr = history.get_buffer_from_hash(triquetra.ternary_slot)
+		if
+			triquetra.ternary_slot ~= nil and
+			(
+				not filepath or
+				(
+					not filepath:match("^NONAME_") and
+					(
+						vim.fn.filereadable(filepath) == 0 or
+						(
+							bufnr == nil and
+							not history.routines.is_filehash_closed(triquetra.ternary_slot)
+							-- i.e. if the buffer is not registered (typically means that buffer is closed) and 
+							-- it is not registered as closed in the closed buffers list. something is wrong 
+							-- with the triquetra, so we just remove it.
+						)
+					)
+				)
+			)
+		then
 			if bufnr then
 				history.routines.unregister_buffer(bufnr)
 			end
@@ -345,10 +381,25 @@ function M.cleanup_triquetras()
 		local pfilehash
 		for index = #(triquetra.primary_buffer or {}), 1, -1 do
 			pfilehash = triquetra.primary_buffer[index]
+			bufnr = history.get_buffer_from_hash(pfilehash)
 			filepath = history.get_filepath_from_hash(pfilehash)
 
-			if not filepath or (not filepath:match("^NONAME_") and vim.fn.filereadable(filepath) == 0) then 
-				local bufnr = history.get_buffer_from_hash(pfilehash)
+			if
+				not filepath or
+				(
+					not filepath:match("^NONAME_") and
+					(
+						vim.fn.filereadable(filepath) == 0 or 
+						(
+							bufnr == nil and
+							not history.routines.is_filehash_closed(triquetra.ternary_slot)
+							-- i.e. if the buffer is not registered (typically means that buffer is closed) and 
+							-- it is not registered as closed in the closed buffers list. something is wrong 
+							-- with the triquetra, so we just remove it.
+						)
+					)
+				)
+			then
 				if bufnr then
 					history.routines.unregister_buffer(bufnr)
 				end
