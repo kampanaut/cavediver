@@ -772,66 +772,10 @@ function M.cleanup_system()
 
 	-- 5. Update ordered lists after cleanup
 	if report.orphaned_history > 0 or report.stale_hash_entries > 0 then
+		require('cavediver.domains.window.routines').cleanup_triquetras()
 		M.update_buffer_history_ordered()
 		M.update_buffer_history_ordered_nonharpooned()
 		report.updated_lists = true
-	end
-
-	return report
-end
-
----Force manual cleanup and return report.
----
----Useful for debugging and manual maintenance.
----
----@return table cleanup_report Summary of what was cleaned up
-function M.force_cleanup()
-	local report = M.cleanup_system()
-
-	local messages = {}
-	if report.orphaned_history > 0 then
-		table.insert(messages, report.orphaned_history .. " orphaned history entries")
-	end
-	if report.invalid_closed_buffers > 0 then
-		table.insert(messages, report.invalid_closed_buffers .. " invalid closed buffers")
-	end
-	if report.stale_hash_entries > 0 then
-		table.insert(messages, report.stale_hash_entries .. " stale hash entries")
-	end
-	if report.invalid_triquetra_refs > 0 then
-		table.insert(messages, report.invalid_triquetra_refs .. " invalid triquetra references")
-	end
-
-	if #messages > 0 then
-		local output = { "Cleanup completed: " .. table.concat(messages, ", ") }
-		
-		if #report.orphaned_hashes > 0 then
-			table.insert(output, "Orphaned files:")
-			for _, hash in ipairs(report.orphaned_hashes) do
-				local path = data.hash_filepath_registry.filepaths[hash] or hash
-				table.insert(output, "  - " .. path)
-			end
-		end
-		
-		if #report.invalid_closed_hashes > 0 then
-			table.insert(output, "Invalid closed files:")
-			for _, hash in ipairs(report.invalid_closed_hashes) do
-				local path = data.hash_filepath_registry.filepaths[hash] or hash
-				table.insert(output, "  - " .. path)
-			end
-		end
-		
-		if #report.stale_hashes > 0 then
-			table.insert(output, "Stale files:")
-			for _, hash in ipairs(report.stale_hashes) do
-				local path = data.hash_filepath_registry.filepaths[hash] or hash
-				table.insert(output, "  - " .. path)
-			end
-		end
-		
-		vim.notify(table.concat(output, "\n"), vim.log.levels.INFO)
-	else
-		vim.notify("System cleanup completed - no issues found", vim.log.levels.INFO)
 	end
 
 	return report

@@ -139,6 +139,5 @@ M.delete_buffer = routines.delete_buffer
 
 -- Cleanup functions
 M.cleanup_system = routines.cleanup_system
-M.force_cleanup = routines.force_cleanup
 
 return M
