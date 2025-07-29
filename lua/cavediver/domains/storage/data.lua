@@ -12,10 +12,6 @@ local M = {}
 ---@field session_metadata table Session metadata including version and timestamp
 ---@field serialization_format string Format for data serialization (json, lua, etc.)
 
----Default session file path
----@type string
-M.session_file = vim.fn.stdpath("data") .. "/nerve_session.json"
-
 ---Auto-save interval in milliseconds (5 minutes default)
 ---@type number
 M.auto_save_interval = 300000

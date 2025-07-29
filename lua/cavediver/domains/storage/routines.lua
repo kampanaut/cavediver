@@ -29,6 +29,7 @@ local data = require('cavediver.domains.storage.data')
 local history = require('cavediver.domains.history')
 local historyState = require('cavediver.domains.history.states')
 local window = require('cavediver.domains.window')
+local configs = require('cavediver.configs')
 
 local M = {}
 
@@ -607,7 +608,7 @@ local function get_session_filepath(pwd)
 	)
 
 	-- TODO: implement configurable path for session storage
-	local session_dir = vim.fn.stdpath("data") .. "/cavediver/sessions/"
+	local session_dir = configs.session_dir
 	local project_filepath = session_dir .. dir_hash .. '.json'
 
 	vim.fn.mkdir(session_dir, "p")
