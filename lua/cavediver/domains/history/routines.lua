@@ -709,7 +709,7 @@ function M.cleanup_system()
 	-- 3. Clean stale hash registry entries (buffers that no longer exist)
 	for filehash, bufnr in pairs(data.hash_buffer_registry.buffers) do
 		local filepath = data.hash_filepath_registry.filepaths[filehash]
-		if vim.api.nvim_buf_is_loaded(bufnr) then
+		if vim.api.nvim_buf_is_valid(bufnr) then
 			goto continue
 		end
 		detach_filehash_from_crux(filepath, filehash)
