@@ -24,7 +24,11 @@ end, 1, true, history.states.mode.UPDATE)
 history.sm:on("*", "*", "cleanup_triquetras", function(context, _, _)
 	-- the filepath-hash registry is the source of truth. If it don't exist, then it shouldn't be in the triquetra.
 	-- It's an close empty noname buffer. And We don't really want this to be tracked when it's closed.
-	routines.cleanup_triquetras()
+	if (context.mode == history.states.mode.DELETE) and context.buf then
+		routines.cleanup_triquetras(context.buf)
+	else
+		routines.cleanup_triquetras()
+	end
 end, 1.8, true)
 
 history.sm:on(history.states.ATTACHED, history.states.ATTACHED, "displacement_mangement", function(context, _, _)

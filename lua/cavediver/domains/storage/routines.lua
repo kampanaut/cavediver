@@ -496,6 +496,19 @@ local function serialise_window_relationships(cwd)
 				[6] = sdisplacement_map
 			}
 			compressed_index = compressed_index + 1
+
+			-- Switch oil buffers to current_slot before serialization
+			if vim.bo[wbufnr].filetype == "oil" then
+				local bufnr = history.get_buffer_from_hash(triquetra.current_slot)
+				if bufnr then
+					local eventignore = vim.o.eventignore
+					vim.o.eventignore = "BufEnter,BufLeave"
+					vim.api.nvim_win_set_buf(winid, bufnr)
+					vim.o.eventignore = eventignore
+					wbufnr = bufnr
+				end
+			end
+
 			::continue::
 		end
 	end

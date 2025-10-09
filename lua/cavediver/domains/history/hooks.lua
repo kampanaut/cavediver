@@ -73,6 +73,20 @@ vim.api.nvim_create_autocmd("BufDelete", {
 	end,
 })
 
+vim.api.nvim_create_autocmd("BufWritePost", {
+	callback = function(args)
+		local bufname = vim.api.nvim_buf_get_name(args.buf)
+
+		-- Skip if already registered
+		if routines.get_hash_from_buffer(args.buf) then
+			return
+		end
+
+		-- Only process normal file buffers with valid filenames
+		historySM:to(historySM:state(), { buf = args.buf }, states.mode.UPDATE)
+	end
+})
+
 -- What happens when we enter a buffer?
 vim.api.nvim_create_autocmd("BufEnter", {
 	callback = function(args)

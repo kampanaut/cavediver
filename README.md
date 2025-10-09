@@ -72,6 +72,18 @@ This cavediver plugin saves the session state in your neovim's `data` directory 
     config = function()
         local resession = require("resession")
         resession.setup( {
+            buf_filter = function(bufnr)
+                local buftype = vim.bo[bufnr].buftype
+                if vim.bo[bufnr].filetype == "image_nvim" or vim.bo[bufnr].filetype == "oil" then -- if you incorporated oil.nvim for example.
+                    return true
+                elseif buftype ~= "" then
+                    return false
+                elseif vim.api.nvim_get_option_value("buflisted", { buf = bufnr }) == false then
+                    return false
+                else
+                    return resession.default_buf_filter(bufnr)
+                end
+            end,
             -- your configurations....
         })
         resession.add_hook("pre_save", function()

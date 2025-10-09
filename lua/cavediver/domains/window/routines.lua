@@ -137,8 +137,9 @@ end
 ---Cleanup all the triquetras. Remove any triquetra that references
 ---to unregistered buffers.
 ---
+---@param bufnr_ondelete nil | Bufnr
 ---@return nil
-function M.cleanup_triquetras()
+function M.cleanup_triquetras(bufnr_ondelete)
 	local set_cache_from_window_triquetra = require("cavediver").ui.routines.set_cache_from_window_triquetra
 	for winid, triquetra in pairs(data.crux) do
 		local current_bufnr = history.get_buffer_from_hash(triquetra.current_slot)
@@ -167,7 +168,7 @@ function M.cleanup_triquetras()
 				if vim.api.nvim_win_is_valid(winid) then
 					cbufnr = vim.api.nvim_win_get_buf(winid)
 					cbufname = vim.api.nvim_buf_get_name(cbufnr)
-					if cbufname == "" then 
+					if cbufname == "" then
 						cbufname = tostring("NONAME_" .. tostring(cbufnr))
 					end
 					cbufhash = history.routines.get_filehash(cbufname)
@@ -175,6 +176,11 @@ function M.cleanup_triquetras()
 					-- yes, this line of code appears three times in this condition branch.
 					-- we delete triquetras associated to windows that are not "regular" windows.
 					data.unregister_triquetra(winid)
+					goto continue
+				end
+
+				if cbufnr == bufnr_ondelete then
+					-- print("skipped because it's the buffer being deleted: ".. (cbufnr or "nil"))
 					goto continue
 				end
 				if cbufhash == triquetra.current_slot or vim.bo[cbufnr].buftype == "acwrite" then -- it means that the buffer didn't evolved to anything new. it was still deleted, so we fallback.
@@ -262,19 +268,19 @@ function M.cleanup_triquetras()
 					else
 						local success, message = pcall(function() vim.cmd("enew") end)
 						if success or (message ~= nil and message:match("BufDelete Autocommand")) then
-							-- Yes we just ignore the error, and don't try to heal this anymore (while every alternative is exhausted 
+							-- Yes we just ignore the error, and don't try to heal this anymore (while every alternative is exhausted
 							-- at this point). We just continue to the next window triquetra.
 							--
-							-- It is implied that there is no history, and no other slots, just the NO_NAME current_slot buffer and 
-							-- NO_NAME current_buffer that is being replaced by... oil buffer for example. So BufDelete gets called, 
-							-- and we arrive here, as cleanup_triquetras() is then called along the way in the BufDelete pipeline. 
-							-- We capture any error that happens in BufDelete Autocmd. So yes we just ignore the error and not 
+							-- It is implied that there is no history, and no other slots, just the NO_NAME current_slot buffer and
+							-- NO_NAME current_buffer that is being replaced by... oil buffer for example. So BufDelete gets called,
+							-- and we arrive here, as cleanup_triquetras() is then called along the way in the BufDelete pipeline.
+							-- We capture any error that happens in BufDelete Autocmd. So yes we just ignore the error and not
 							-- attempt any self-healing, as this would be just modified. SPECIAL EXCEPTION!
 							--
-							-- And I wrote this "if block" this way so that I can write the comment above in an intuitive way. 
+							-- And I wrote this "if block" this way so that I can write the comment above in an intuitive way.
 							-- Rather than doing inversion.
 							--
-							-- vim throws an error when we try to make a new buffer when our current buffer is still a no name 
+							-- vim throws an error when we try to make a new buffer when our current buffer is still a no name
 							-- buffer being deleted.
 							goto continue
 						else
@@ -326,7 +332,7 @@ function M.cleanup_triquetras()
 
 		filepath = history.get_filepath_from_hash(triquetra.secondary_slot)
 		bufnr = history.get_buffer_from_hash(triquetra.secondary_slot)
-		if 
+		if
 			triquetra.secondary_slot ~= nil and
 			(
 				not filepath or
@@ -337,9 +343,9 @@ function M.cleanup_triquetras()
 						(
 							bufnr == nil and
 							not history.routines.is_filehash_closed(triquetra.ternary_slot)
-							-- i.e. if the buffer is not registered (typically means that buffer is closed) and 
-							-- it is not registered as closed in the closed buffers list. something is wrong 
-							-- with the triquetra, so we just remove it.
+						-- i.e. if the buffer is not registered (typically means that buffer is closed) and
+						-- it is not registered as closed in the closed buffers list. something is wrong
+						-- with the triquetra, so we just remove it.
 						)
 					)
 				)
@@ -364,9 +370,9 @@ function M.cleanup_triquetras()
 						(
 							bufnr == nil and
 							not history.routines.is_filehash_closed(triquetra.ternary_slot)
-							-- i.e. if the buffer is not registered (typically means that buffer is closed) and 
-							-- it is not registered as closed in the closed buffers list. something is wrong 
-							-- with the triquetra, so we just remove it.
+						-- i.e. if the buffer is not registered (typically means that buffer is closed) and
+						-- it is not registered as closed in the closed buffers list. something is wrong
+						-- with the triquetra, so we just remove it.
 						)
 					)
 				)
@@ -389,13 +395,13 @@ function M.cleanup_triquetras()
 				(
 					not filepath:match("^NONAME_") and
 					(
-						vim.fn.filereadable(filepath) == 0 or 
+						vim.fn.filereadable(filepath) == 0 or
 						(
 							bufnr == nil and
 							not history.routines.is_filehash_closed(triquetra.ternary_slot)
-							-- i.e. if the buffer is not registered (typically means that buffer is closed) and 
-							-- it is not registered as closed in the closed buffers list. something is wrong 
-							-- with the triquetra, so we just remove it.
+						-- i.e. if the buffer is not registered (typically means that buffer is closed) and
+						-- it is not registered as closed in the closed buffers list. something is wrong
+						-- with the triquetra, so we just remove it.
 						)
 					)
 				)
@@ -410,12 +416,12 @@ function M.cleanup_triquetras()
 
 		filepath = history.get_filepath_from_hash(triquetra.current_slot)
 		if not filepath then
-			local bufnr = history.get_buffer_from_hash(triquetra.current_slot)
+			bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 			if bufnr then
 				history.routines.unregister_buffer(bufnr)
 			end
 		elseif not filepath:match("^NONAME_") and vim.fn.filereadable(filepath) == 0 then
-			local bufnr = history.get_buffer_from_hash(triquetra.current_slot)
+			bufnr = history.get_buffer_from_hash(triquetra.current_slot)
 			if bufnr then
 				history.routines.unregister_buffer(bufnr)
 				if bufnr ~= -1 and vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then
@@ -574,7 +580,8 @@ function M.swap_with_ternary(winid)
 			return
 		else
 			remove_from_closed_buffers(triquetra.ternary_slot)
-			vim.notify("File reopened for ternary slot: " .. old_basename .. " - old: " .. old_ternary_filehash, vim.log.levels
+			vim.notify("File reopened for ternary slot: " .. old_basename .. " - old: " .. old_ternary_filehash,
+				vim.log.levels
 				.INFO)
 		end
 	end
@@ -636,7 +643,7 @@ function M.jump_to_primary(winid)
 		end
 		if cbufnr == nil then
 			error("Primary buffer not found in filesystem: " ..
-			history.get_filepath_from_hash(triquetra.primary_buffer[1]))
+				history.get_filepath_from_hash(triquetra.primary_buffer[1]))
 		else
 			remove_from_closed_buffers(triquetra.primary_buffer[1])
 		end
@@ -724,7 +731,7 @@ local function restore_from_displacement_map(type, triquetra)
 			type .. " slot.", vim.log.levels.WARN)
 	elseif not filepath then
 		error("This impossible error should never happen. Remembered " .. type .. " is not registered in history.")
-	elseif vim.fn.filereadable(filepath) == 0 then
+	elseif (not filepath:match("^NONAME_")) and vim.fn.filereadable(filepath) == 0 then
 		vim.notify("Remembered " .. type .. " is not found in filesystem anymore.", vim.log.levels.WARN)
 		triquetra["displacement_" .. type .. "_map"][triquetra.current_slot] = nil
 	elseif remembered_relationship == current_relationship then
