@@ -56,6 +56,8 @@ function M.unregister_triquetra(winid)
 	if M.last_valid_window then
 		history.routines.construct_crux(M.last_valid_window)
 	end
+
+	require('cavediver.domains.ui.routines').remove_winbar_string(winid)
 	-- print("Unregistered triquetra for window " .. winid .. "\n" .. debug.traceback())
 end
 

@@ -53,6 +53,8 @@
 ---@field winbar_enabled boolean Whether winbars should be shown
 ---@field indicators_enabled boolean Whether buffer indicators should be shown
 
+local M = {}
+
 -- Pre-computed bufferline state for performance (migrated from buffers.lua)
 ---@type BufferlineCache
 local bufferline_state = {
@@ -148,7 +150,7 @@ local display_name_cache = {}
 ---Reset bufferline cache to empty state.
 ---
 ---@return nil
-local function clear_bufferline_cache()
+function M.clear_bufferline_cache()
     bufferline_state = {
         harpooned_buffers = {},
         harpooned_lookup = {},
@@ -165,7 +167,7 @@ end
 ---
 ---@param component string Component name ("bufferline", "winbar", "indicators")
 ---@return boolean hidden True if component is hidden
-local function is_component_hidden(component)
+function M.is_component_hidden(component)
     return hidden_components[component] or false
 end
 
@@ -174,22 +176,22 @@ end
 ---@param component string Component name ("bufferline", "winbar", "indicators")  
 ---@param hidden boolean Whether the component should be hidden
 ---@return nil
-local function set_component_visibility(component, hidden)
+function M.set_component_visibility(component, hidden)
     hidden_components[component] = hidden
 end
 
 ---Clear the display name cache (called on buffer changes).
 ---
 ---@return nil
-local function clear_display_name_cache()
-    display_name_cache = {}
+function M.clear_display_name_cache()
+    M.display_name_cache = {}
 end
 
 ---Get or create empty UI window triquetra for a window.
 ---
 ---@param winid number Window ID
 ---@return UIWindowTriquetra triquetra Empty triquetra structure
-local function get_or_create_window_display_cache(winid)
+function M.get_or_create_window_display_cache(winid)
     if not window_display_cache[winid] then
         window_display_cache[winid] = {
             winid = winid,
@@ -221,22 +223,22 @@ end
 ---
 ---@param winid number Window ID to clear cache for
 ---@return nil
-local function clear_window_display_cache(winid)
+function M.clear_window_display_cache(winid)
     window_display_cache[winid] = nil
 end
 
-return {
-    bufferline_state = bufferline_state,
-    hidden_components = hidden_components,
-    display_settings = display_settings,
-    display_name_cache = display_name_cache,
-    window_display_cache = window_display_cache,
-	winbar_themes = winbar_themes,
-	excluded_filetypes = excluded_filetypes,
-    clear_bufferline_cache = clear_bufferline_cache,
-    is_component_hidden = is_component_hidden,
-    set_component_visibility = set_component_visibility,
-    clear_display_name_cache = clear_display_name_cache,
-    get_or_create_window_display_cache = get_or_create_window_display_cache,
-    clear_window_display_cache = clear_window_display_cache,
-}
+M.bufferline_state = bufferline_state
+
+M.hidden_components = hidden_components
+
+M.display_settings = display_settings
+
+M.display_name_cache = display_name_cache
+
+M.window_display_cache = window_display_cache
+
+M.winbar_themes = winbar_themes
+
+M.excluded_filetypes = excluded_filetypes
+
+return M

@@ -551,6 +551,11 @@ local function construct_winbar_string(winid, theme)
 	vim.wo[winid].winbar = display_string
 end
 
+---@param winid WinId
+function M.remove_winbar_string(winid)
+	vim.wo[winid].winbar = ""
+end
+
 
 ---@param winid WinId
 ---@param topwin WinId
