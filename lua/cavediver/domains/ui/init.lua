@@ -55,7 +55,7 @@ end
 
 ---Initiate UI Timers (cleanup and winbar refresh)
 ---@return nil
-function M.init_refresh_timer(refresh_interval)
+function M.init_refresh_timer()
 	local periodic_timer = vim.loop:new_timer()
 
 	if not periodic_timer then
