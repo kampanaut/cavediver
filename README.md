@@ -31,9 +31,11 @@ This is a **navigation context manager system** that visualizes your working con
 
 
 ## Demo
+This is a short demo. It just covers how the triquetra buffers update for all sorts of jumps. The system automatically handles all cases, to make jumps and backtracking consistent. This buffers update only updates at BufEnter and non-cycling mode.
 
-<video src="https://github.com/user-attachments/assets/9c5c886e-fa63-404e-9038-f3d79012e9e8" width="100%" controls autoplay muted loop>
-</video>
+You can also see that the two windows have their own history. You can turn this off. 
+
+![Image](https://github.com/user-attachments/assets/deb30ab4-d049-437d-bbd5-8dfe5c21bd47)
 
 ## Requirements
 
