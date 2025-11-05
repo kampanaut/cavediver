@@ -2,7 +2,9 @@
 
 ## Introduction
 
-This is a **navigation context manager system** that visualizes your working context during _convoluted development workflows_. Have you ever jumped so many times, jumping to definitions, across files, and then suddenly you just felt lost? Like you ask yourself, _how did I end up here?_ Well... this plugin **helps you visualize the current context of where are you at** and enables a way of **non-destructive exploration** so you can fearlessly navigate codebases while preserving your working context across sessions also.
+This is a **navigation context manager system**. Let me explain what that is: have you ever felt lost after unconsciously jumping to files trying to get around the codebase just because you forgot to be conscious about it? Like some jumps earlier you should have remembered your current filename, but you were too busy thinking about the problem at hand not the filename itself. And also sometimes you don't want to mess up your current jumping setup, like, at some point you have decided to just swap between files A and B, with A being your current file, and now you have to go to C. In traditional neovim, B would have been forgotten, and now you can only jump between A and C. It's fine if you remember the full filename of B, what if you forgot? And now it gets annoying to try remember it and then it just interrupts your flow, trying to go back to only swap between A and B. 
+
+This is the kind of problem this plugin solves for you. We introduce mainly **Triquetra buffer system**. This is the novel part of the project. In a way because of how the triquetra buffers are presented in the UI, this gives you at least a semblance of your current jumping setup. And I have designed this in a way, that you can always restore the secondary buffer and the ternary buffer so you can always get back to what once was. There are other neat features as well, just read the **How to Use** section below.
 
 ### Functions
 
