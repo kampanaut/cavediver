@@ -329,7 +329,7 @@ Winbar UI:
 
 **Ternary slot**
 
-The ternary slot updates every time you jump to a new buffer. The current buffer you had will now become the ternary buffer time. And the new buffer will become the current buffer. It's your previous buffer, basically. But it won't get modified when you select a buffer dueing cycling mode, via `<m-v>`.
+The ternary slot updates every time you jump to a new buffer. The current buffer you had will now become the ternary buffer when you jump to a new buffer that is not the secondary buffer. And the new buffer will become the current buffer. It's your previous buffer, basically. But it won't get updated when you select a buffer during cycling mode, via `<m-v>`.
 
 Everytime you jump, if there is a ternary buffer, the system records your current buffer's ternary buffer, before the current buffer is replaced. So when you go back to that current buffer and want to bring back what was once before, you can do it with `<m-;><m-r>`.
 
@@ -343,6 +343,8 @@ Every time you jump to secondary the system also records the current buffers, se
 
 The primary buffer is the window's "mark."
 So if you have a buffer of interest that you don't want to lose your hands on, then simply make it a primary buffer, so that no matter how much you kept jumping, you can bring it back to your reach with `<m-;><m-f>`
+
+Also take a look at the **New feature** section above as I had extended this feature as well.
 
 **Notes**
 
