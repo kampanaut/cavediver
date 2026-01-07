@@ -29,77 +29,77 @@ local defaults = {
 	colors = {
 		base = {
 			focused = {
-				fg = "#D5C4A1",
-				bg = "#151515",
+				fg = "#B7B5AC", -- base-300
+				bg = "#151515", -- your bg
 			},
 			unfocused = {
-				fg = "#504945",
+				fg = "#575653", -- base-700
 				bg = "#151515"
 			},
 		},
 		current = {
 			focused = {
-				filename = "#A9B665",
-				bufnr = "#A9B665",
+				filename = "#879A39", -- green-400
+				bufnr = "#879A39",
 			},
 			unfocused = {
-				filename = "#504945",
-				bufnr = "#504945",
+				filename = "#575653",
+				bufnr = "#575653",
 			}
 		},
 		secondary = {
 			focused = {
-				filename = "#A9B665",
-				bufnr = "#D8A657"
+				filename = "#879A39",
+				bufnr = "#DA702C" -- orange-400
 			},
 			unfocused = {
-				filename = "#504945",
-				bufnr = "#504945",
+				filename = "#575653",
+				bufnr = "#575653",
 			},
 		},
 		ternary = {
 			focused = {
-				filename = "#8d965e",
-				bufnr = "#8d965e"
+				filename = "#9F9D96", -- base-400
+				bufnr = "#9F9D96"
 			},
 			unfocused = {
-				filename = "#504945",
-				bufnr = "#504945",
+				filename = "#575653",
+				bufnr = "#575653",
 			},
 		},
 		primary = {
-			active = "#FFAF00",
-			inactive = "#504945",
-			unfocused = "#504945"
+			active = "#D0A215", -- yellow-400
+			inactive = "#575653",
+			unfocused = "#575653"
 		},
 		harpooned = {
 			unfocused = {
-				fg = "#5d6699",
+				fg = "#8B7EC8", -- purple-400
 			}
 		},
 		both_way_arrow = {
-			focused = "#5F87AF",
-			unfocused = "#5F87AF"
+			focused = "#4385BE", -- blue-400
+			unfocused = "#4385BE"
 		},
 		cokeline = {
-			is_picking_close = "#a05959",
-			is_picking_focus = "#d7d7a5",
+			is_picking_close = "#D14D41", -- red-400
+			is_picking_focus = "#D0A215", -- yellow-400
 			bg = {
 				detached = {
-					focused = "#2B2A33",
-					unfocused = "#020202",
+					focused = "#282726", -- base-900
+					unfocused = "#100F0F", -- black
 				},
 				attached = "#151515"
 			},
 			fg = {
-				focused = "#988E75",
-				unfocused = "#6c6c6c"
+				focused = "#878580", -- base-500
+				unfocused = "#6F6E69" -- base-600
 			},
 			diagnostics = {
-				error = "#b75956",
-				warning = "#d6ae40",
-				info = "#b9eae9",
-				hint = "#a1e276"
+				error = "#D14D41", -- red-400
+				warning = "#D0A215", -- yellow-400
+				info = "#3AA99F", -- cyan-400
+				hint = "#879A39" -- green-400
 			}
 		}
 	},
@@ -129,8 +129,8 @@ local defaults = {
 
 		open_primary_buffer_history = "<M-;>F", -- Open primary buffer history
 	},
-	cleanup_interval = 4000,    -- seconds
-	winbar_refresh_interval = 140 -- milliseconds
+	cleanup_interval = 4000,              -- seconds
+	winbar_refresh_interval = 140         -- milliseconds
 }
 
 return defaults
