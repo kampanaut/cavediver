@@ -460,7 +460,7 @@ local function construct_winbar_string(winid, theme)
 				vim.api.nvim_strwidth(tostring(triquetra.ternary_bufnr))
 		else
 			display_string = display_string .. string.format(
-				"%%#%s#⦉ %%#%s# %%#%s# %s ⦊",
+				"%%#%s#⦉ %%#%s# %%#%s# %s ⦊ ",
 				theme.ternary_slot_filename, theme.ternary_slot_bufnr, theme.ternary_slot_filename,
 				triquetra.ternary_display_name
 			)
