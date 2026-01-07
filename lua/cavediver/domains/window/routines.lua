@@ -738,6 +738,7 @@ local function restore_from_displacement_map(type, triquetra)
 		error("This is impossible. Remembered " ..
 			type .. " is the same as current " .. type .. ". It should be different for flip flop.")
 	else
+		local ui_get_basename = require('cavediver.domains.ui').routines.get_smart_basename
 		if type == "ternary" then
 			if remembered_relationship == triquetra.secondary_slot then
 				triquetra.secondary_slot = triquetra.ternary_slot
@@ -745,7 +746,7 @@ local function restore_from_displacement_map(type, triquetra)
 			else
 				triquetra.ternary_slot = remembered_relationship
 			end
-			vim.notify("Restored " .. type .. " slot to: " .. remembered_relationship, vim.log.levels.INFO)
+			vim.notify("Restored " .. type .. " slot to: " .. remembered_relationship .. " (" .. ui_get_basename(remembered_relationship) .. ")", vim.log.levels.INFO)
 		elseif type == "secondary" then
 			if remembered_relationship == triquetra.ternary_slot then
 				triquetra.ternary_slot = triquetra.secondary_slot
@@ -753,7 +754,7 @@ local function restore_from_displacement_map(type, triquetra)
 			else
 				triquetra.secondary_slot = remembered_relationship
 			end
-			vim.notify("Restored " .. type .. " slot to: " .. remembered_relationship, vim.log.levels.INFO)
+			vim.notify("Restored " .. type .. " slot to: " .. remembered_relationship .. " (" .. ui_get_basename(remembered_relationship) .. ")", vim.log.levels.INFO)
 		end
 		triquetra["displacement_" .. type .. "_map"][triquetra.current_slot] = current_relationship
 	end
