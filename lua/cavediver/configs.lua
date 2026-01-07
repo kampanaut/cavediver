@@ -95,6 +95,12 @@ local defaults = {
 				focused = "#988E75",
 				unfocused = "#6c6c6c"
 			},
+			diagnostics = {
+				error = "#b75956",
+				warning = "#d6ae40",
+				info = "#b9eae9",
+				hint = "#a1e276"
+			}
 		}
 	},
 	keymaps = {

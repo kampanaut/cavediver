@@ -327,10 +327,10 @@ function M.bufferline.cokeline.create_buffer_components()
 	end
 	local get_hex = require('cokeline.hlgroups').get_hl_attr
 	local comment = get_hex('Comment', 'fg')
-	local diagnostic_errors = get_hex('DiagnosticError', 'fg')
-	local diagnostic_warnings = get_hex('DiagnosticWarn', 'fg')
-	local diagnostic_infos = get_hex('DiagnosticInfo', 'fg')
-	local diagnostic_hints = get_hex('DiagnosticHint', 'fg')
+	local diagnostic_errors = configs.colors.cokeline.diagnostics.error
+	local diagnostic_warnings = configs.colors.cokeline.diagnostics.warning
+	local diagnostic_infos = configs.colors.cokeline.diagnostics.info
+	local diagnostic_hints = configs.colors.cokeline.diagnostics.hint
 	local components = {
 		space = {
 			text = ' ',
