@@ -68,7 +68,7 @@ local defaults = {
 			},
 		},
 		primary = {
-			active = "#D0A215", -- yellow-400
+			active = "#FFAF00",
 			inactive = "#575653",
 			unfocused = "#575653"
 		},
@@ -83,7 +83,7 @@ local defaults = {
 		},
 		cokeline = {
 			is_picking_close = "#D14D41", -- red-400
-			is_picking_focus = "#D0A215", -- yellow-400
+			active = "#FFAF00",
 			bg = {
 				detached = {
 					focused = "#282726", -- base-900
