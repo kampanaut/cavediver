@@ -389,6 +389,7 @@ function M.bufferline.cokeline.create_buffer_components()
 				else
 					if harpooned then
 						return "󰛢  "
+
 					else
 						return ' '
 					end

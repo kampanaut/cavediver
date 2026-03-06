@@ -273,7 +273,7 @@ function M.update_buffer_history(cbufnr)
 	---@type Filehash
 	local filehash = data.hash_buffer_registry.hashes[cbufnr]
 	if filehash == nil then
-		if vim.bo[cbufnr].buftype == "" and (not filename:match("://")) then
+		if vim.bo[cbufnr].buftype == "" and (not (filename:match("://") or filename:match("otter%.%w+$"))) then
 			filehash = M.register_buffer(cbufnr)
 		else
 			return false
