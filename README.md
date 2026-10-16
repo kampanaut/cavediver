@@ -188,6 +188,21 @@ to your current buffer.
             },
             components = require('cavediver').bufferline.cokeline.create_buffer_components()
         })
+
+        -- :tabmove fires no autocmd and cokeline only refetches tabs when the count
+        -- changes, so refetch on render whenever the cached order drifts from the real one
+        local cokeline_tabs = require('cokeline.tabs')
+        local get_tabs = cokeline_tabs.get_tabs
+        cokeline_tabs.get_tabs = function()
+            local cached = get_tabs()
+            for i, tabnr in ipairs(vim.api.nvim_list_tabpages()) do
+                if cached[i] == nil or cached[i].number ~= tabnr then
+                    cokeline_tabs.fetch_tabs()
+                    return require('cokeline.state').tab_cache
+                end
+            end
+            return cached
+        end
     end
     dependencies = {
         "nvim-lua/plenary.nvim", -- Required for v0.4.0+
